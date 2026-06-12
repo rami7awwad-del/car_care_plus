@@ -1,0 +1,46 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Car Care Plus (Debug)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "--flavor",
+        "development"
+      ]
+    },
+    {
+      "name": "Car Care Plus (Release)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "--release",
+        "--flavor",
+        "production"
+      ]
+    },
+    {
+      "name": "Car Care Plus (Profile)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "--profile",
+        "--flavor",
+        "development"
+      ]
+    },
+    {
+      "name": "Run All Tests",
+      "request": "launch",
+      "type": "dart",
+      "program": "test/unit/",
+      "args": [
+        "--concurrency=4"
+      ]
+    }
+  ]
+}

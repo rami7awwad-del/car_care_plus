@@ -1,0 +1,111 @@
+Analyzing car_care_plus...                                      
+
+  error - Target of URI doesn't exist: '../constants/app_colors.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist - lib\core\widgets\gradient_button.dart:4:8 - uri_does_not_exist
+  error - Invalid constant value - lib\core\widgets\gradient_button.dart:30:20 - invalid_constant
+  error - The values in a const list literal must be constants. Try removing the keyword 'const' from the list literal - lib\core\widgets\gradient_button.dart:30:20 - non_constant_list_element
+  error - Undefined name 'AppColors'. Try correcting the name to one that is defined, or defining the name - lib\core\widgets\gradient_button.dart:30:20 - undefined_identifier
+  error - The values in a const list literal must be constants. Try removing the keyword 'const' from the list literal - lib\core\widgets\gradient_button.dart:30:39 - non_constant_list_element
+  error - Undefined name 'AppColors'. Try correcting the name to one that is defined, or defining the name - lib\core\widgets\gradient_button.dart:30:39 - undefined_identifier
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\core\widgets\gradient_button.dart:34:45 - undefined_identifier
+  error - Undefined name 'AppColors'. Try correcting the name to one that is defined, or defining the name - lib\core\widgets\gradient_button.dart:35:38 - undefined_identifier
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\core\widgets\gradient_button.dart:42:77 - undefined_identifier
+  error - Invalid constant value - lib\core\widgets\gradient_button.dart:53:96 - invalid_constant
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\core\widgets\gradient_button.dart:53:96 - undefined_identifier
+   info - The imported package 'flutter_riverpod' isn't a dependency of the importing package. Try adding a dependency for 'flutter_riverpod' in the 'pubspec.yaml' file - lib\presentation\customer\auth\pages\login_page.dart:4:8 - depend_on_referenced_packages
+  error - Target of URI doesn't exist: 'package:flutter_riverpod/flutter_riverpod.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist - lib\presentation\customer\auth\pages\login_page.dart:4:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: '../../../../core/constants/app_colors.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist - lib\presentation\customer\auth\pages\login_page.dart:6:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: '../../../../core/widgets/social_login_button.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist - lib\presentation\customer\auth\pages\login_page.dart:9:8 - uri_does_not_exist
+  error - Classes can only extend other classes. Try specifying a different superclass, or removing the extends clause - lib\presentation\customer\auth\pages\login_page.dart:11:25 - extends_non_class
+  error - No associated named super constructor parameter. Try changing the name to the name of an existing named super constructor parameter, or creating such named parameter - lib\presentation\customer\auth\pages\login_page.dart:12:26 - super_formal_parameter_without_associated_named
+  error - Undefined class 'ConsumerState'. Try changing the name to the name of an existing class, or creating a class with the name 'ConsumerState' - lib\presentation\customer\auth\pages\login_page.dart:15:3 - undefined_class
+warning - The method doesn't override an inherited method. Try updating this class to match the superclass, or removing the override annotation - lib\presentation\customer\auth\pages\login_page.dart:15:28 - override_on_non_overriding_member
+  error - Classes can only extend other classes. Try specifying a different superclass, or removing the extends clause - lib\presentation\customer\auth\pages\login_page.dart:18:31 - extends_non_class
+warning - The method doesn't override an inherited method. Try updating this class to match the superclass, or removing the override annotation - lib\presentation\customer\auth\pages\login_page.dart:25:10 - override_on_non_overriding_member
+  error - Invalid constant value - lib\presentation\customer\auth\pages\login_page.dart:34:39 - invalid_constant
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\login_page.dart:34:39 - undefined_identifier
+  error - Undefined name 'AppColors'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\login_page.dart:45:53 - undefined_identifier
+  error - Undefined name 'AppColors'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\login_page.dart:45:72 - undefined_identifier
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\login_page.dart:46:55 - undefined_identifier
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\login_page.dart:52:30 - undefined_identifier
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\login_page.dart:56:30 - undefined_identifier
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\login_page.dart:59:30 - undefined_identifier
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\login_page.dart:63:30 - undefined_identifier
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\login_page.dart:67:30 - undefined_identifier
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\login_page.dart:78:30 - undefined_identifier
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\login_page.dart:83:30 - undefined_identifier
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\login_page.dart:88:30 - undefined_identifier
+  error - The method 'SocialLoginButton' isn't defined for the type '_LoginPageState'. Try correcting the name to the name of an existing method, or defining a method named 'SocialLoginButton' - lib\presentation\customer\auth\pages\login_page.dart:94:26 - undefined_method
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\login_page.dart:96:33 - undefined_identifier
+  error - The method 'SocialLoginButton' isn't defined for the type '_LoginPageState'. Try correcting the name to the name of an existing method, or defining a method named 'SocialLoginButton' - lib\presentation\customer\auth\pages\login_page.dart:98:26 - undefined_method
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\login_page.dart:103:30 - undefined_identifier
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\login_page.dart:132:72 - undefined_identifier
+  error - The method 'setState' isn't defined for the type '_LoginPageState'. Try correcting the name to the name of an existing method, or defining a method named 'setState' - lib\presentation\customer\auth\pages\login_page.dart:146:28 - undefined_method
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\login_page.dart:150:72 - undefined_identifier
+  error - The method 'setState' isn't defined for the type '_LoginPageState'. Try correcting the name to the name of an existing method, or defining a method named 'setState' - lib\presentation\customer\auth\pages\login_page.dart:160:33 - undefined_method
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\login_page.dart:161:77 - undefined_identifier
+  error - Invalid constant value - lib\presentation\customer\auth\pages\login_page.dart:173:59 - invalid_constant
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\login_page.dart:173:59 - undefined_identifier
+  error - Undefined name 'context'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\login_page.dart:174:45 - undefined_identifier
+  error - Target of URI doesn't exist: '../../../../core/constants/app_colors.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist - lib\presentation\customer\auth\pages\otp_page.dart.dart:5:8 - uri_does_not_exist
+  error - Invalid constant value - lib\presentation\customer\auth\pages\otp_page.dart.dart:48:39 - invalid_constant
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\otp_page.dart.dart:48:39 - undefined_identifier
+  error - Undefined name 'AppColors'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\otp_page.dart.dart:58:48 - undefined_identifier
+  error - Invalid constant value - lib\presentation\customer\auth\pages\otp_page.dart.dart:59:70 - invalid_constant
+  error - Undefined name 'AppColors'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\otp_page.dart.dart:59:70 - undefined_identifier
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\otp_page.dart.dart:62:30 - undefined_identifier
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\otp_page.dart.dart:67:30 - undefined_identifier
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\otp_page.dart.dart:75:30 - undefined_identifier
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\otp_page.dart.dart:87:30 - undefined_identifier
+  error - The method 'GradientButton' isn't defined for the type '_OtpPageState'. Try correcting the name to the name of an existing method, or defining a method named 'GradientButton' - lib\presentation\customer\auth\pages\otp_page.dart.dart:90:13 - undefined_method
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\otp_page.dart.dart:92:30 - undefined_identifier
+  error - Undefined name 'AppColors'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\otp_page.dart.dart:100:56 - undefined_identifier
+  error - Undefined name 'AppColors'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\otp_page.dart.dart:100:76 - undefined_identifier
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\otp_page.dart.dart:118:45 - undefined_identifier
+  error - Undefined name 'AppColors'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\otp_page.dart.dart:119:35 - undefined_identifier
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\otp_page.dart.dart:130:45 - undefined_identifier
+  error - Undefined name 'AppColors'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\otp_page.dart.dart:131:35 - undefined_identifier
+  error - Classes can only extend other classes. Try specifying a different superclass, or removing the extends clause - lib\presentation\customer\auth\pages\splash_page.dart:10:26 - extends_non_class
+  error - No associated named super constructor parameter. Try changing the name to the name of an existing named super constructor parameter, or creating such named parameter - lib\presentation\customer\auth\pages\splash_page.dart:11:27 - super_formal_parameter_without_associated_named
+  error - Undefined class 'ConsumerState'. Try changing the name to the name of an existing class, or creating a class with the name 'ConsumerState' - lib\presentation\customer\auth\pages\splash_page.dart:14:3 - undefined_class
+warning - The method doesn't override an inherited method. Try updating this class to match the superclass, or removing the override annotation - lib\presentation\customer\auth\pages\splash_page.dart:14:29 - override_on_non_overriding_member
+  error - 'Object.toString' ('String Function()') isn't a valid concrete implementation of 'Diagnosticable.toString' ('String Function({DiagnosticLevel minLevel})') - lib\presentation\customer\auth\pages\splash_page.dart:17:7 - invalid_implementation_override
+  error - Missing concrete implementations of 'Diagnosticable.toDiagnosticsNode', 'Diagnosticable.toStringShort', 'State.deactivate', 'State.didChangeDependencies', and 6 more. Try implementing the missing methods, or make the class abstract - lib\presentation\customer\auth\pages\splash_page.dart:17:7 - non_abstract_class_inherits_abstract_member
+  error - Mixin can only be applied to class - lib\presentation\customer\auth\pages\splash_page.dart:17:32 - mixin_with_non_class_superclass
+  error - 'SingleTickerProviderStateMixin<StatefulWidget>' can't be mixed onto 'Object' because 'Object' doesn't implement 'State<StatefulWidget>'. Try extending the class 'SingleTickerProviderStateMixin<StatefulWidget>' - lib\presentation\customer\auth\pages\splash_page.dart:17:63 - mixin_application_not_implemented_interface
+  error - The method 'initState' is always abstract in the supertype - lib\presentation\customer\auth\pages\splash_page.dart:23:11 - abstract_super_member_reference
+  error - Undefined name 'AppColors'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\splash_page.dart:59:22 - undefined_identifier
+  error - Undefined name 'AppColors'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\splash_page.dart:59:41 - undefined_identifier
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement - lib\presentation\customer\auth\pages\splash_page.dart:79:45 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement - lib\presentation\customer\auth\pages\splash_page.dart:79:76 - deprecated_member_use
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\splash_page.dart:81:57 - undefined_identifier
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement - lib\presentation\customer\auth\pages\splash_page.dart:83:53 - deprecated_member_use
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\splash_page.dart:89:34 - undefined_identifier
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\splash_page.dart:97:34 - undefined_identifier
+  error - Invalid constant value - lib\presentation\customer\auth\pages\splash_page.dart:101:67 - invalid_constant
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\splash_page.dart:101:67 - undefined_identifier
+  error - Invalid constant value - lib\presentation\customer\auth\pages\splash_page.dart:101:89 - invalid_constant
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\splash_page.dart:101:89 - undefined_identifier
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement - lib\presentation\customer\auth\pages\splash_page.dart:103:41 - deprecated_member_use
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\splash_page.dart:104:57 - undefined_identifier
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\splash_page.dart:109:34 - undefined_identifier
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement - lib\presentation\customer\auth\pages\splash_page.dart:115:88 - deprecated_member_use
+  error - Target of URI doesn't exist: '../../../../core/constants/app_colors.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist - lib\presentation\customer\auth\pages\welcome_page.dart:5:8 - uri_does_not_exist
+  error - Undefined name 'AppColors'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\welcome_page.dart:29:34 - undefined_identifier
+  error - Undefined name 'AppColors'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\welcome_page.dart:29:70 - undefined_identifier
+  error - Undefined name 'AppColors'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\welcome_page.dart:41:80 - undefined_identifier
+  error - Undefined name 'AppColors'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\welcome_page.dart:51:80 - undefined_identifier
+  error - Invalid constant value - lib\presentation\customer\auth\pages\welcome_page.dart:65:47 - invalid_constant
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\welcome_page.dart:65:47 - undefined_identifier
+  error - Invalid constant value - lib\presentation\customer\auth\pages\welcome_page.dart:69:46 - invalid_constant
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\welcome_page.dart:69:46 - undefined_identifier
+  error - Invalid constant value - lib\presentation\customer\auth\pages\welcome_page.dart:70:47 - invalid_constant
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\welcome_page.dart:70:47 - undefined_identifier
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement - lib\presentation\customer\auth\pages\welcome_page.dart:73:51 - deprecated_member_use
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\welcome_page.dart:86:38 - undefined_identifier
+  error - Undefined name 'AppColors'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\welcome_page.dart:92:67 - undefined_identifier
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\welcome_page.dart:96:38 - undefined_identifier
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\welcome_page.dart:105:38 - undefined_identifier
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\welcome_page.dart:114:38 - undefined_identifier
+  error - Undefined name 'Spacing'. Try correcting the name to one that is defined, or defining the name - lib\presentation\customer\auth\pages\welcome_page.dart:120:91 - undefined_identifier
+
+107 issues found. (ran in 1.3s)
