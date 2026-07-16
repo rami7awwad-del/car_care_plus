@@ -1,0 +1,34 @@
+
+state chart
+
+حالات الدفع 
+
+بدء الدفع pending 
+	|
+	|
+  1 اختيار طريقة الدفع
+   selecting method
+	|
+	├── cash selected -----تاكيد الطلب ----- > awating cash ---موظف يؤكد ---> cash collected------> *
+	|
+	├── point selected ---  رصيد كافي ؟ ---- yes --->  point deducted -----insufficient point ------> *
+	|                         └──------no -------------------------insufficient point ----اختيار طريقة اخرى -- >  (1)
+	|
+	|
+	└── package selected-----لباقة سارية ؟ ----- yes ---> package deducted -------package expired ------> *
+                                     └──------no ------------------------- package expired ----اختيار طريقة اخرى -- >  (1)
+
+      (*)------ دفع مكتكل --> receipt issud --اضافة نقاط --->   close -----> end
+
+
+
+
+
+
+
+
+
+
+
+
+\\10.65.0.67

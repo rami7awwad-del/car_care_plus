@@ -1,6 +1,9 @@
-import 'package:car_care_plus/presentation/customer/auth/pages/welcome_page.dart';
 import 'package:flutter/material.dart';
-import 'app/app_strings.dart'; // مهم جداً
+import 'package:flutter_localizations/flutter_localizations.dart';
+
+import 'app/app_language.dart';
+import 'config/router.dart';
+import 'core/themes/app_theme.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,19 +14,29 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<Locale>(
-      valueListenable: appLocale,
-      builder: (context, locale, child) {
-        return MaterialApp(
-          title: 'Login UI',
-          debugShowCheckedModeBanner: false,
-
-          // 👇 هذا أهم سطر
-          locale: locale,
-
-          theme: ThemeData(primarySwatch: Colors.indigo, scaffoldBackgroundColor: const Color(0xFFF5F7FA)),
-
-          home: const WelcomePage(),
+    // نستمع لتغيّر وضع الثيم واللغة معاً ونعيد بناء التطبيق بناءً عليهما.
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: appThemeMode,
+      builder: (context, themeMode, _) {
+        return ValueListenableBuilder<Locale>(
+          valueListenable: appLocale,
+          builder: (context, locale, _) {
+            return MaterialApp.router(
+              title: 'CarCarePlus',
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.light,
+              darkTheme: AppTheme.dark,
+              themeMode: themeMode,
+              locale: locale,
+              supportedLocales: const [Locale('ar'), Locale('en')],
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              routerConfig: AppRouter.router,
+            );
+          },
         );
       },
     );

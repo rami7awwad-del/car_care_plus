@@ -1,0 +1,770 @@
+erDiagram
+
+    %% ============================
+    %% USERS & AUTHENTICATION
+    %% ============================
+
+    users {
+        int id PK
+        VARCHAR name
+        VARCHAR email
+        VARCHAR phone
+        VARCHAR password
+        BOOLEAN is_active
+        VARCHAR image_url
+        VARCHAR remember_token
+        BOOLEAN email_verified "nullable"
+        TIMESTAMP last_login_at
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+        TIMESTAMP deleted_at
+    }
+
+    roles {
+        int id PK
+        VARCHAR name
+        TEXT description
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    permissions {
+        int id PK
+        VARCHAR name
+        TEXT description
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    user_roles {
+        int user_id FK
+        int role_id FK
+        TIMESTAMP created_at
+    }
+
+    role_permissions {
+        int role_id FK
+        int permission_id FK
+    }
+
+    otp_codes {
+        int id PK
+        int user_id FK
+        VARCHAR code
+        ENUM type
+        ENUM channel
+        BOOLEAN is_used
+        INT attempts
+        TIMESTAMP expires_at
+        TIMESTAMP created_at
+    }
+
+    %% ============================
+    %% COMPANIES & BRANCHES
+    %% ============================
+
+    companies {
+        int id PK
+        int customer_id FK
+        VARCHAR name
+        VARCHAR name_ar
+        VARCHAR commercial_reg
+        VARCHAR tax_number
+        TEXT address
+        int is_active
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    branches {
+        int id PK
+        int admin_id FK
+        VARCHAR name
+        VARCHAR name_ar
+        VARCHAR city
+        TEXT addres
+        DECIMAL latitude
+        DECIMAL longitude
+        VARCHAR phone
+        BOOLEAN is_active
+        JSON working_hours
+        BOOLEAN is_24h
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    %% ============================
+    %% EMPLOYEES & CARS
+    %% ============================
+
+    employees {
+        int id PK
+        int user_id FK
+        int branch_id FK
+        BOOLEAN type "technician\washer"
+        BOOLEAN is_active
+        DECIMAL rating_avg
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    cars {
+        int id PK
+        int costumer_id FK
+        int company_id FK "nullable"
+        int car_type_id FK
+        VARCHAR plate_number
+        VARCHAR brand
+        VARCHAR model
+        YEAR year
+        VARCHAR color
+        ENUM fuel_type
+        INT cylinders
+        INT mileage
+        VARCHAR image_url
+        BOOLEAN is_active
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    car_types {
+        int id PK
+        VARCHAR name
+        VARCHAR name_ar
+        DECIMAL price_multiplier
+        BOOLEAN is_active
+        TIMESTAMP created_at    
+    }
+
+    %% ============================
+    %% SERVICES & PRICING
+    %% ============================
+
+    categories {
+        int id PK
+        VARCHAR name
+        VARCHAR name_ar
+        TEXT description
+        BOOLEAN is_active
+        TIMESTAMP created_at
+    }
+
+    services {
+        int id PK
+        int category_id FK
+        int service_type_id FK
+        VARCHAR name
+        VARCHAR name_ar
+        TEXT description
+        DECIMAL base_price
+        BOOLEAN is_vip_available
+        DECIMAL vip_extra_price "nullable"
+        INT duration_minutes
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    service_types {
+        int id PK
+        VARCHAR name
+        VARCHAR name_ar
+        TIMESTAMP created_at
+    }
+
+    sub_services {
+        int id PK
+        int service_id FK
+        VARCHAR name
+        VARCHAR name_ar
+        TEXT description
+        DECIMAL price
+        BOOLEAN is_active
+        TIMESTAMP created_at
+    }
+
+    pricing_rules {
+        int id PK
+        int super_admin_id FK
+        bigint pricing_rule_type_id FK
+        VARCHAR name
+        DOUBLE value
+        JSON conditions
+        BOOLEAN is_active
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    pricing_rule_types {
+        int id PK
+        VARCHAR name
+        VARCHAR name_ar
+        TIMESTAMP created_at
+    }
+
+    %% ============================
+    %% MATERIALS & INVENTORY
+    %% ============================
+
+    materials {
+        int id PK
+        int material_unit_id FK
+        VARCHAR name
+        VARCHAR name_ar
+        TEXT description
+        DECIMAL unit_price
+        BOOLEAN is_vip_material
+        BOOLEAN is_active
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    material_units {
+        int id PK
+        VARCHAR name
+        VARCHAR name_ar
+        BOOLEAN is_decimal
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    %%= pivot btwen materials and inventory_transactions
+    inventory {
+        int id PK
+        int branch_id FK
+        int material_id FK
+        DECIMAL quantity
+        DECIMAL min_quantity
+        TIMESTAMP updated_at
+    }
+
+    inventory_transactions {
+        int id PK
+        int branch_id FK
+        int material_id FK
+        int created_by FK
+        ENUM type
+        DECIMAL quantity
+        DECIMAL quantity_before
+        DECIMAL quantity_after
+        UUID reference_id
+        TEXT note
+        TIMESTAMP created_at
+    }
+
+    purchase_requests {
+        int id PK
+        int branch_id FK
+        int from_branch_id FK "nullable"
+        ENUM status
+        DECIMAL total_amount
+        TEXT notes
+        BOOLEAN request_type "purchase/transfer"
+        TEXT rejection_reason "nullable"
+        TIMESTAMP approved_at
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    purchase_request_items {
+        int id PK
+        int purchase_req_id FK
+        int material_id FK
+        DECIMAL quantity
+        DECIMAL unit_price
+        DECIMAL total_price
+    }
+
+    %% ============================
+    %% PACKAGES & SUBSCRIPTIONS
+    %% ============================
+
+    packages {
+        int id PK
+        VARCHAR name
+        TEXT description
+        ENUM type
+        DECIMAL price
+        DECIMAL discount_pct
+        INT services_count
+        INT valid_days
+        BOOLEAN is_active
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    package_services {
+        int id PK
+        int package_id FK
+        int service_id FK
+        INT allowed_count
+    }
+
+    package_service_sub_services {
+    int id PK
+    int package_service_id FK
+    int sub_service_id FK
+    DECIMAL price_override "nullable"
+    BOOLEAN is_active
+    TIMESTAMP created_at
+}
+
+    user_packages {
+        int id PK
+        int user_id FK
+        int package_id FK
+        DATE start_date
+        DATE end_date
+        INT remaining_count
+        ENUM status
+        TIMESTAMP created_at
+    }
+
+    %% ============================
+    %% ORDERS
+    %% ============================
+
+    orders {
+        int id PK
+        int customer_id FK
+        int company_id "nullable"
+        int car_id FK
+        int branch_id FK "nullable"
+        int employee_id FK "nullable"
+        int service_id FK
+        ENUM type
+        BOOLEAN booking_type "immed,sched"
+        BOOLEAN is_vip
+        TIMESTAMP scheduled_at
+        TIMESTAMP started_at
+        TIMESTAMP completed_at
+        TIMESTAMP cancelled_at
+        TEXT cancel_reason "nullable"
+        DECIMAL location_lat
+        DECIMAL location_lng
+        TEXT location_address
+        DECIMAL distance_km
+        DECIMAL base_price
+        DECIMAL vip_price "nullabel"
+        DECIMAL distance_price "nullable"
+        DECIMAL sub_services_price "nullabel"
+        DECIMAL order_material_price "nullabel"
+        DECIMAL discount_amount "default 0"
+        DECIMAL total_price
+        TEXT notes
+        enum status
+        TIMESTAMP assigned_at
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    order_sub_services {
+        int id PK
+        int order_id FK
+        int sub_service_id FK
+        DECIMAL price
+        ENUM status
+        TEXT notes
+        TIMESTAMP checked_at
+    }
+
+    order_materials {
+        int id PK
+        int order_id FK
+        int material_id FK
+        int requested_by  FK
+        DECIMAL quantity
+        DECIMAL unit_price
+        DECIMAL total_price
+        ENUM status
+        TIMESTAMP approved_at
+        TIMESTAMP created_at
+    }
+
+    order_status_history {
+        int id PK
+        int order_id FK
+        int employee_id FK
+        VARCHAR from_status
+        VARCHAR to_status
+        TEXT note
+        TIMESTAMP created_at
+    }
+
+    road_assistance_details {
+        int id PK
+        int order_id FK
+        int problem_type_id FK
+        ENUM car_type_size
+        TEXT problem_description
+        VARCHAR problem_image_url "nullabel"
+        TEXT ai_diagnosis "nullable"
+        JSON ai_chat_log "nullable"
+        BOOLEAN towing_required
+        TIMESTAMP created_at
+    }
+
+    problem_types {
+        int id PK
+        VARCHAR name
+        VARCHAR name_ar
+        BOOLEAN is_active
+    }
+
+    suggested_problems {
+        int id PK
+        VARCHAR name
+        VARCHAR name_ar
+        TEXT description
+        ENUM category
+        TIMESTAMP created_at
+    }
+
+    %% ============================
+    %% PAYMENTS & FINANCE
+    %% ============================
+
+    payments {
+        int id PK
+        int order_id FK
+        int user_id FK
+        int package_id FK
+        int cash_confirmed_by FK
+        VARCHAR payment_number
+        ENUM type
+        ENUM method
+        ENUM status
+        DECIMAL amount
+        INT points_used
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    refunds {
+        int id PK
+        int payment_id FK
+        int order_id FK
+        int user_id FK
+        DECIMAL amount
+        ENUM reason
+        ENUM status
+        ENUM destination
+        TEXT notes
+        TIMESTAMP created_at
+    }
+
+    wallets {
+        int id PK
+        int user_id FK
+        DECIMAL balance
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    wallet_transactions {
+        int id PK
+        int wallet_id FK
+        int user_id FK
+        ENUM type
+        ENUM reason
+        DECIMAL amount
+        DECIMAL balance_before
+        DECIMAL balance_after
+        TEXT note
+        TIMESTAMP created_at
+    }
+
+    %% ============================
+    %% POINTS SYSTEM
+    %% ============================
+
+    points_config {
+        int id PK
+        DECIMAL earn_per_amount
+        DECIMAL redeem_value
+        INT min_redeem
+        INT expiry_days
+        INT max_earn_per_order
+        BOOLEAN is_active
+        TIMESTAMP updated_at
+    }
+
+    user_points {
+        int id PK
+        int customer_id FK
+        INT balance
+        TIMESTAMP updated_at
+    }
+
+    points_transactions {
+        int id PK
+        int customer_id FK
+        ENUM type
+        INT points
+        INT balance_before
+        INT balance_after
+        VARCHAR reference_type
+        int reference_id
+        TIMESTAMP expires_at
+        TEXT note
+        TIMESTAMP created_at
+    }
+
+
+  
+    %% ============================
+    %% RATINGS & NOTIFICATIONS
+    %% ============================
+
+    ratings {
+        int id PK
+        int order_id FK
+        int costumer_id FK
+        int employee_id FK
+        TINYINT service_rating
+        TINYINT employee_rating
+        TINYINT workshop_rating
+        TEXT comment
+        JSON image_urls
+        TIMESTAMP created_at
+    }
+
+    notifications {
+        int id PK
+        int user_id FK
+        VARCHAR title
+        TEXT body
+        ENUM type
+        VARCHAR reference_type
+        int reference_id
+        BOOLEAN is_read
+        TIMESTAMP read_at
+        JSON sent_via
+        TIMESTAMP created_at
+    }
+
+    %% ============================
+    %% EMPLOYEE FIELD OPERATIONS
+    %% ============================
+
+    employee_reports {
+        int id PK
+        int order_id FK
+        int employee_id FK
+        TEXT problem_description
+        JSON affected_parts
+        JSON images
+        TEXT recommendation
+        ENUM status
+        TIMESTAMP reviewed_at
+        TIMESTAMP created_at
+    }
+
+    spare_part_requests {
+        int id PK
+        int order_id FK
+        int employee_id FK
+        int admin_id FK
+        VARCHAR part_name
+        VARCHAR part_number
+        TEXT specifications
+        ENUM status
+        TEXT notes
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    gps_logs {
+        int id PK
+        int employee_id FK
+        int order_id FK
+        DECIMAL latitude
+        DECIMAL longitude
+        TIMESTAMP recorded_at
+        TIMESTAMP created_at
+    }
+
+    %% ============================
+    %% SCHEDULING & CONTRACTS
+    %% ============================
+
+    scheduling_conflicts {
+        int id PK
+        int order_id_1 FK
+        int order_id_2 FK
+        TIMESTAMP conflict_time
+        ENUM resolution_type
+        DECIMAL discount_offered
+        DECIMAL extra_cost
+        TIMESTAMP resolved_at "nullable"
+        TIMESTAMP created_at
+    }
+
+    workshops {
+    int id PK
+    VARCHAR name
+    VARCHAR name_ar
+    VARCHAR phone
+    TEXT address
+    VARCHAR city
+    DECIMAL latitude
+    DECIMAL longitude
+    ENUM status
+    DECIMAL rating_avg
+    TIMESTAMP created_at
+    TIMESTAMP updated_at
+}
+
+    contracts {
+        int id PK
+        int company_id FK
+        int created_by FK
+        int workshop_id FK
+        VARCHAR title
+        DECIMAL value
+        DATE start_date
+        DATE end_date
+        TEXT terms
+        VARCHAR file_url
+        ENUM status
+        INT renewal_count
+        TIMESTAMP last_renewed_at
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    %% ============================
+    %% AI & SYSTEM
+    %% ============================
+
+    ai_rules {
+        int id PK
+        VARCHAR name
+        VARCHAR name_ar
+        ENUM type
+        VARCHAR condition_key
+        VARCHAR condition_value
+        VARCHAR car_brand
+        VARCHAR car_type
+        VARCHAR fuel_type
+        TEXT response_template
+        BOOLEAN is_active
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    system_settings {
+        int id PK
+        VARCHAR key
+        TEXT value
+        ENUM type
+        TEXT description
+        TIMESTAMP updated_at
+    }
+
+    audit_logs {
+        int id PK
+        int user_id FK
+        int record_id
+        VARCHAR table_name
+        VARCHAR action
+        JSON old_values
+        JSON new_values
+        VARCHAR ip_address
+        VARCHAR user_agent
+        TIMESTAMP created_at
+    }
+
+    
+
+    %% ============================
+    %% RELATIONSHIPS
+    %% ============================
+
+    users ||--o{ otp_codes : has
+    users ||--o| wallets : owns
+    users ||--o| user_points : owns
+    users ||--o{ cars : owns
+    users ||--o{ orders : creates
+    users ||--o{ user_packages : subscribes
+    users ||--o| companies : owns
+    users ||--o| employees : owns
+    users ||--o| branches : manage
+    users ||--o{ pricing_rules : create
+    users ||--o{ inventory_transactions : creates
+    users ||--o{ payments : pays
+    users ||--o{ payments : confirms_cash
+    users ||--o{ audit_logs : performs
+    users ||--o{ order_materials : user_id
+    users ||--o{ order_status_history : employee_id
+    users ||--o{ points_transactions : tracks
+    users ||--o{ refunds : requests
+    users ||--o{ wallet_transactions : owns
+    users ||--o{ refunds : processes
+    users ||--o{ ratings : writes
+    users ||--o{ notifications : receives
+    users ||--o{ spare_part_requests : approves
+    users ||--o{ contracts : creates
+    user_packages ||--o{ payments : used_in
+
+    companies ||--o{ cars : owns
+    companies ||--o{ contracts : has
+
+    branches ||--o{ employees : employs
+    branches ||--o{ inventory : stores
+    branches ||--o{ orders : handles
+    branches ||--o{ purchase_requests : has
+    branches ||--o{ purchase_requests : from_branch_id
+    
+    materials ||--o{ purchase_request_items : includes
+    materials ||--o{ inventory_transactions : affects
+    materials ||--o{ inventory : stored_in
+    materials ||--o{ order_materials : h
+    
+    services ||--o{ package_services : linked
+    services ||--o{ orders : includes
+    services ||--o{ sub_services : has
+
+    packages ||--o{ package_services : includes
+    packages ||--o{ user_packages : contains
+    package_services ||--o{ package_service_sub_services : has
+
+    orders ||--o{ order_materials : uses
+    orders ||--o{ order_sub_services : contains
+    orders ||--o{ order_status_history : tracks
+    orders ||--o{ payments : paid_by
+    orders ||--o{ ratings : rated
+    orders ||--|| road_assistance_details : details
+    orders ||--o{ refunds : related_to
+    orders ||--o{ gps_logs : related_to
+    orders ||--o{ scheduling_conflicts : conflict_order_1
+    orders ||--o{ scheduling_conflicts : conflict_order_2
+    orders ||--o{ employee_reports : has
+    orders ||--o{ spare_part_requests : has
+
+    payments ||--o{ refunds : refunded
+
+    employees ||--o{ gps_logs : tracked
+    employees ||--o{ employee_reports : writes
+    employees ||--o{ spare_part_requests : requests
+    employees ||--o{ orders : handles
+    employees ||--o{ ratings : gets
+
+    sub_services ||--o{ order_sub_services : h
+    sub_services ||--o{ package_service_sub_services : included
+
+    categories ||--o{ services : contains
+    purchase_requests ||--o{ purchase_request_items : contains
+    cars ||--o{ orders : used_in
+    wallets ||--o{ wallet_transactions : tracks
+    workshops ||--o{ contracts : has
+    
+    users ||--o{ user_roles : has
+    roles ||--o{ user_roles : assigned_to
+
+    roles ||--o{ role_permissions : contains
+    permissions ||--o{ role_permissions : granted_to
+    car_types ||--o{ cars : classified    
+    service_types ||--o{ services : classify
+    pricing_rule_types ||--o{ pricing_rules : classify
+    material_units ||--o{ materials : measured_by
+    problem_types ||--o{ road_assistance_details : has

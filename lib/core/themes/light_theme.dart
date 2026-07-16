@@ -1,3 +1,4 @@
 import 'package:flutter/material.dart';
+import 'app_theme.dart';
 
-final ThemeData lightTheme = ThemeData.light().copyWith(primaryColor: Colors.blue);
+final ThemeData lightTheme = AppTheme.light;

@@ -1,19 +1,18 @@
 // lib/presentation/customer/auth/pages/splash_page.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/spacing.dart';
 
-class SplashPage extends ConsumerStatefulWidget {
+class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
 
   @override
-  ConsumerState<SplashPage> createState() => _SplashPageState();
+  State<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends ConsumerState<SplashPage> with SingleTickerProviderStateMixin {
+class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateMixin {
   late AnimationController _scaleController;
   late Animation<double> _scaleAnimation;
 
@@ -36,7 +35,7 @@ class _SplashPageState extends ConsumerState<SplashPage> with SingleTickerProvid
   Future<void> _navigateToNext() async {
     await Future.delayed(const Duration(milliseconds: 2500));
     if (mounted) {
-      // التحقق من الـ token
+      // TODO: التحقق من الـ token وتوجيه المستخدم للصفحة المناسبة
       context.go('/welcome');
     }
   }
@@ -51,7 +50,7 @@ class _SplashPageState extends ConsumerState<SplashPage> with SingleTickerProvid
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -89,7 +88,7 @@ class _SplashPageState extends ConsumerState<SplashPage> with SingleTickerProvid
                   child: const Icon(Icons.car_repair_rounded, size: 60, color: Colors.white),
                 ),
 
-                SizedBox(height: Spacing.xl),
+                const SizedBox(height: Spacing.xl),
 
                 // App Name
                 const Text(
@@ -97,7 +96,7 @@ class _SplashPageState extends ConsumerState<SplashPage> with SingleTickerProvid
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 1),
                 ),
 
-                SizedBox(height: Spacing.sm),
+                const SizedBox(height: Spacing.sm),
 
                 // Tagline
                 Container(
@@ -109,9 +108,9 @@ class _SplashPageState extends ConsumerState<SplashPage> with SingleTickerProvid
                   child: const Text('خدمات سيارتك بلمسة واحدة', style: TextStyle(fontSize: 12, color: Colors.white)),
                 ),
 
-                SizedBox(height: Spacing.xxxl * 2),
+                const SizedBox(height: Spacing.xxxl * 2),
 
-                // Loading Indicator مع تصميم
+                // Loading Indicator
                 SizedBox(
                   width: 40,
                   height: 40,
