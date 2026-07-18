@@ -59,8 +59,9 @@ lib/
   `CustomAppBar(title)`.
 
 ## Feature Status
-### ✅ Real UI (mock data)
-- Customer Auth: Welcome, Login, Register, OTP verification, Splash
+### ✅ Real UI
+- Customer Auth: Welcome, Login, Register (**wired to the real API**), OTP verification (unused in flow —
+  reserved for password reset), Splash
 - Home: themed landing with emergency banner → Road Assistance
 - **Road Assistance** (`presentation/customer/roadside/`): 4-step request wizard
   (service → details → location/photo → review+price) + tracking screen (mock map,
@@ -74,9 +75,18 @@ lib/
 ### ❌ Not started (no presentation layer)
 - AI Chatbot · Points & Packages · Admin dashboard
 
+## API Integration (started 2026-07-17)
+- **Auth (Login + Register)** wired to the Laravel backend. Layering: `AuthCubit` → `AuthRepositoryImpl`
+  → `AuthApi` → `DioClient`. Token saved via `TokenStorage` (flutter_secure_storage). See `docs/API_INTEGRATION.md`.
+- `DioClient` (`data/datasources/remote/dio_client.dart`): base URL from `Env.apiBaseUrl`
+  (`http://10.0.2.2:8000/api` for the Android emulator), Bearer interceptor, `ApiException` mapping
+  (Laravel 422 field errors), optional logging. Cleartext http enabled in the **debug** manifest only.
+- Endpoint paths in `core/constants/api_constants.dart`. Login/Register return a token → go to `/home`
+  (no OTP in the auth flow). **Not yet wired**: logout, other features (still mock/stub).
+
 ## Known Issues / Tech Debt
-1. **Empty Cubits/usecases/repositories** — no real state management or data layer yet; auth uses
-   local `setState` + `Future.delayed` mock. Wiring the Cubits to usecases/repos is still to do.
+1. **Most Cubits/usecases/repositories still empty** — only auth has a real data layer; other features
+   use mock data or are stubs. Wiring them to the API is still to do.
 2. **`lib/app/app.dart`** — an older `MaterialApp.router` wrapper, now redundant (main.dart is the
    canonical entry). Safe to delete once confirmed unused.
 3. Feature pages (home, cars, booking, …) are still placeholders — see status table.

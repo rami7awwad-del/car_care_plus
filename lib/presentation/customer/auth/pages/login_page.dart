@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:car_care_plus/app/app_language.dart';
 import 'package:car_care_plus/presentation/common/widgets/theme_switcher.dart';
+import '../cubit/auth_cubit.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,21 +17,14 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
 
   bool _obscurePassword = true;
-  bool _isLoading = false;
 
-  void _login() async {
+  void _submit(BuildContext context) {
     if (_loginController.text.trim().isEmpty || _passwordController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppStrings.allFieldsRequired)));
       return;
     }
-
-    setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 2)); // محاكاة تسجيل الدخول
-    if (!mounted) return;
-    setState(() => _isLoading = false);
-
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppStrings.loginSuccess)));
-    context.go('/home');
+    // الحقل يقبل البريد أو الهاتف؛ يُرسل في حقل email.
+    context.read<AuthCubit>().login(_loginController.text.trim(), _passwordController.text);
   }
 
   @override
@@ -41,68 +36,84 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    // ValueListenableBuilder لتحديث النصوص فوراً عند تغيير اللغة.
     return ValueListenableBuilder<Locale>(
       valueListenable: appLocale,
       builder: (context, locale, child) {
-        return Scaffold(
-          appBar: AppBar(
-            title: Text(AppStrings.login),
-            actions: const [ThemeSwitcher(color: Colors.white)],
-          ),
-          body: Padding(
-            padding: const EdgeInsets.all(20),
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  const SizedBox(height: 40),
-                  TextField(
-                    controller: _loginController,
-                    decoration: InputDecoration(
-                      labelText: AppStrings.emailOrPhone,
-                      prefixIcon: const Icon(Icons.person_outline),
+        return BlocProvider(
+          create: (_) => AuthCubit.create(),
+          child: BlocConsumer<AuthCubit, AuthState>(
+            listener: (context, state) {
+              if (state is AuthSuccess) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppStrings.loginSuccess)));
+                context.go('/home');
+              } else if (state is AuthFailure) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message)));
+              }
+            },
+            builder: (context, state) {
+              final bool isLoading = state is AuthLoading;
+              return Scaffold(
+                appBar: AppBar(
+                  title: Text(AppStrings.login),
+                  actions: const [ThemeSwitcher(color: Colors.white)],
+                ),
+                body: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 40),
+                        TextField(
+                          controller: _loginController,
+                          decoration: InputDecoration(
+                            labelText: AppStrings.emailOrPhone,
+                            prefixIcon: const Icon(Icons.person_outline),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        TextField(
+                          controller: _passwordController,
+                          obscureText: _obscurePassword,
+                          onSubmitted: (_) => isLoading ? null : _submit(context),
+                          decoration: InputDecoration(
+                            labelText: AppStrings.password,
+                            prefixIcon: const Icon(Icons.lock_outline),
+                            suffixIcon: IconButton(
+                              icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                            ),
+                          ),
+                        ),
+                        Align(
+                          alignment: AlignmentDirectional.centerEnd,
+                          child: TextButton(onPressed: () {}, child: Text(AppStrings.forgotPassword)),
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 55,
+                          child: ElevatedButton(
+                            onPressed: isLoading ? null : () => _submit(context),
+                            child: isLoading
+                                ? const SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+                                  )
+                                : Text(AppStrings.login),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        TextButton(
+                          onPressed: () => context.push('/register'),
+                          child: Text(AppStrings.noAccount),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: _passwordController,
-                    obscureText: _obscurePassword,
-                    decoration: InputDecoration(
-                      labelText: AppStrings.password,
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      suffixIcon: IconButton(
-                        icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                      ),
-                    ),
-                  ),
-                  Align(
-                    alignment: AlignmentDirectional.centerEnd,
-                    child: TextButton(onPressed: () {}, child: Text(AppStrings.forgotPassword)),
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 55,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _login,
-                      child: _isLoading
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
-                            )
-                          : Text(AppStrings.login),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextButton(
-                    onPressed: () => context.push('/register'),
-                    child: Text(AppStrings.noAccount),
-                  ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           ),
         );
       },
