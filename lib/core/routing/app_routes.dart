@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:car_care_plus/features/auth/presentation/login_page.dart';
 import 'package:car_care_plus/features/auth/presentation/register_page.dart';
 import 'package:car_care_plus/features/auth/presentation/welcome_page.dart';
+import 'package:car_care_plus/features/main_layout/main_layout.dart';
 
 class Routes {
   static const String login = '/login';
   static const String register = '/register';
   static const String welcome = '/welcome';
+  static const String mainLayout = '/main';
 }
 
 class AppRouter {
@@ -29,6 +31,11 @@ class AppRouter {
       case Routes.welcome:
         return MaterialPageRoute(
           builder: (_) => const WelcomePage(),
+        );
+
+      case Routes.mainLayout:
+        return MaterialPageRoute(
+          builder: (_) => const MainLayout(),
         );
 
       default:

@@ -209,7 +209,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         );
                         Navigator.pushNamedAndRemoveUntil(
                           context,
-                          Routes.welcome,
+                          Routes.mainLayout,
                           (route) => false,
                         );
                       } else if (state is AuthFailure) {

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import 'package:car_care_plus/Localization/l10n/app_localization.dart';
 import 'package:car_care_plus/core/routing/app_routes.dart';
 import 'package:car_care_plus/features/auth/data/auth_remote_data_source.dart';
 import 'package:car_care_plus/features/auth/data/auth_repository_impl.dart';
@@ -32,7 +33,9 @@ class _MyAppState extends State<MyApp> {
     // 1️⃣ تهيئة الطبقات الخاصة بـ Auth
     final dio = Dio();
     final authRemoteDataSource = AuthRemoteDataSourceImpl(dio: dio);
-    _authRepository = AuthRepositoryImpl(remoteDataSource: authRemoteDataSource);
+    _authRepository = AuthRepositoryImpl(
+      remoteDataSource: authRemoteDataSource,
+    );
 
     // 2️⃣ تهيئة الـ AppRouter
     _appRouter = AppRouter(
@@ -56,8 +59,10 @@ class _MyAppState extends State<MyApp> {
           child: MaterialApp(
             debugShowCheckedModeBanner: false,
             locale: _locale,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             // 🔗 استخدام الروت نيم هنا
-            initialRoute: Routes.login,
+            initialRoute: Routes.mainLayout,
             onGenerateRoute: _appRouter.generateRoute,
           ),
         );
