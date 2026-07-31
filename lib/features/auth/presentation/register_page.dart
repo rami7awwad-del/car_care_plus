@@ -7,6 +7,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:car_care_plus/core/routing/app_routes.dart';
 import 'package:car_care_plus/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:car_care_plus/features/auth/presentation/cubit/auth_state.dart';
+import 'package:car_care_plus/features/auth/presentation/company_info_page.dart';
+import 'package:car_care_plus/features/auth/presentation/widgets/account_type_toggle.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -26,6 +28,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  AccountType _accountType = AccountType.individual;
 
   void _register() {
     if (_formKey.currentState!.validate()) {
@@ -36,6 +39,24 @@ class _RegisterPageState extends State<RegisterPage> {
             password: _passwordController.text.trim(),
             passwordConfirmation: _confirmPasswordController.text.trim(),
           );
+    }
+  }
+
+  // حساب شركة: ننتقل لصفحة استكمال البيانات مع الاحتفاظ بالحقول المشتركة
+  void _goToCompanyInfo() {
+    if (_formKey.currentState!.validate()) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => CompanyInfoPage(
+            name: _nameController.text.trim(),
+            email: _emailController.text.trim(),
+            phone: _phoneController.text.trim(),
+            password: _passwordController.text.trim(),
+            passwordConfirmation: _confirmPasswordController.text.trim(),
+          ),
+        ),
+      );
     }
   }
 
@@ -81,6 +102,14 @@ class _RegisterPageState extends State<RegisterPage> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const SizedBox(height: 10),
+
+                  // مبدّل نوع الحساب في رأس الصفحة
+                  AccountTypeToggle(
+                    value: _accountType,
+                    onChanged: (type) => setState(() => _accountType = type),
+                  ),
+
+                  const SizedBox(height: 16),
 
                   // الشعار
                   CircleAvatar(
@@ -200,6 +229,8 @@ class _RegisterPageState extends State<RegisterPage> {
                   // زر إنشاء الحساب
                   BlocConsumer<AuthCubit, AuthState>(
                     listener: (context, state) {
+                      // تدفّق الشركة تتم معالجته في صفحة معلومات الشركة
+                      if (_accountType != AccountType.individual) return;
                       if (state is AuthSuccess) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -237,7 +268,11 @@ class _RegisterPageState extends State<RegisterPage> {
                           ],
                         ),
                         child: ElevatedButton(
-                          onPressed: state is AuthLoading ? null : _register,
+                          onPressed: state is AuthLoading
+                              ? null
+                              : (_accountType == AccountType.individual
+                                  ? _register
+                                  : _goToCompanyInfo),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.transparent,
                             shadowColor: Colors.transparent,
@@ -250,7 +285,9 @@ class _RegisterPageState extends State<RegisterPage> {
                                   color: AppColors.surfaceWhite,
                                 )
                               : Text(
-                                  'إنشاء حساب',
+                                  _accountType == AccountType.individual
+                                      ? 'إنشاء حساب'
+                                      : 'التالي',
                                   style: TextStyles.Size18
                                       .withColor(AppColors.surfaceWhite)
                                       .withWeight(FontWeight.bold),

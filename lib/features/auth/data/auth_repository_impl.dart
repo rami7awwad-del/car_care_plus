@@ -48,4 +48,38 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(e.toString().replaceAll('Exception: ', ''));
     }
   }
+
+  @override
+  Future<Either<String, UserModel>> registerCompany({
+    required String name,
+    required String email,
+    required String phone,
+    required String password,
+    required String passwordConfirmation,
+    required String companyName,
+    required String companyNameAr,
+    required String commercialReg,
+    required String taxNumber,
+    required String companyAddress,
+    bool isActive = false,
+  }) async {
+    try {
+      final user = await remoteDataSource.registerCompany(
+        name: name,
+        email: email,
+        phone: phone,
+        password: password,
+        passwordConfirmation: passwordConfirmation,
+        companyName: companyName,
+        companyNameAr: companyNameAr,
+        commercialReg: commercialReg,
+        taxNumber: taxNumber,
+        companyAddress: companyAddress,
+        isActive: isActive,
+      );
+      return Right(user);
+    } catch (e) {
+      return Left(e.toString().replaceAll('Exception: ', ''));
+    }
+  }
 }

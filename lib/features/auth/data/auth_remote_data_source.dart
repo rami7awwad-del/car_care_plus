@@ -15,6 +15,20 @@ abstract class AuthRemoteDataSource {
     required String passwordConfirmation,
     bool isActive = true,
   });
+
+  Future<UserModel> registerCompany({
+    required String name,
+    required String email,
+    required String phone,
+    required String password,
+    required String passwordConfirmation,
+    required String companyName,
+    required String companyNameAr,
+    required String commercialReg,
+    required String taxNumber,
+    required String companyAddress,
+    bool isActive = false,
+  });
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -63,16 +77,19 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     bool isActive = true,
   }) async {
     try {
+      // 📦 حساب الفرد يُرسل كـ form-data
+      final formData = FormData.fromMap({
+        'name': name,
+        'email': email,
+        'phone': phone,
+        'password': password,
+        'password_confirmation': passwordConfirmation,
+        'is_active': isActive ? 1 : 0,
+      });
+
       final response = await dio.post(
         '$baseUrl/auth/register/customer',
-        data: {
-          'name': name,
-          'email': email,
-          'phone': phone,
-          'password': password,
-          'password_confirmation': passwordConfirmation,
-          'is_active': isActive,
-        },
+        data: formData,
       );
 
       if ((response.statusCode == 200 || response.statusCode == 201) &&
@@ -80,6 +97,53 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         return UserModel.fromJson(response.data);
       } else {
         throw Exception(response.data['message'] ?? 'فشل إنشاء الحساب');
+      }
+    } on DioException catch (e) {
+      throw Exception(
+        e.response?.data['message'] ??
+            'تعذر الاتصال بالسيرفر، تأكد من تشغيل Laravel',
+      );
+    }
+  }
+
+  @override
+  Future<UserModel> registerCompany({
+    required String name,
+    required String email,
+    required String phone,
+    required String password,
+    required String passwordConfirmation,
+    required String companyName,
+    required String companyNameAr,
+    required String commercialReg,
+    required String taxNumber,
+    required String companyAddress,
+    bool isActive = false,
+  }) async {
+    try {
+      // 🏢 حساب الشركة يُرسل كـ JSON خام
+      final response = await dio.post(
+        '$baseUrl/auth/register/company',
+        data: {
+          'name': name,
+          'email': email,
+          'phone': phone,
+          'password': password,
+          'password_confirmation': passwordConfirmation,
+          'is_active': isActive,
+          'company_name': companyName,
+          'company_name_ar': companyNameAr,
+          'commercial_reg': commercialReg,
+          'tax_number': taxNumber,
+          'company_address': companyAddress,
+        },
+      );
+
+      if ((response.statusCode == 200 || response.statusCode == 201) &&
+          response.data['status'] == 1) {
+        return UserModel.fromJson(response.data);
+      } else {
+        throw Exception(response.data['message'] ?? 'فشل إنشاء حساب الشركة');
       }
     } on DioException catch (e) {
       throw Exception(

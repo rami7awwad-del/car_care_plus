@@ -48,4 +48,38 @@ class AuthCubit extends Cubit<AuthState> {
       (userModel) => emit(AuthSuccess(userModel)),
     );
   }
+
+  // دالة إنشاء حساب شركة
+  Future<void> registerCompany({
+    required String name,
+    required String email,
+    required String phone,
+    required String password,
+    required String passwordConfirmation,
+    required String companyName,
+    required String companyNameAr,
+    required String commercialReg,
+    required String taxNumber,
+    required String companyAddress,
+  }) async {
+    emit(AuthLoading());
+
+    final result = await authRepository.registerCompany(
+      name: name,
+      email: email,
+      phone: phone,
+      password: password,
+      passwordConfirmation: passwordConfirmation,
+      companyName: companyName,
+      companyNameAr: companyNameAr,
+      commercialReg: commercialReg,
+      taxNumber: taxNumber,
+      companyAddress: companyAddress,
+    );
+
+    result.fold(
+      (failureMessage) => emit(AuthFailure(failureMessage)),
+      (userModel) => emit(AuthSuccess(userModel)),
+    );
+  }
 }

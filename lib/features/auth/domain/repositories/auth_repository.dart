@@ -15,4 +15,18 @@ abstract class AuthRepository {
     required String passwordConfirmation,
     bool isActive = true,
   });
+
+  Future<Either<String, UserModel>> registerCompany({
+    required String name,
+    required String email,
+    required String phone,
+    required String password,
+    required String passwordConfirmation,
+    required String companyName,
+    required String companyNameAr,
+    required String commercialReg,
+    required String taxNumber,
+    required String companyAddress,
+    bool isActive = false,
+  });
 }
