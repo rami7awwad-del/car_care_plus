@@ -29,4 +29,13 @@ abstract class AuthRepository {
     required String companyAddress,
     bool isActive = false,
   });
+
+  Future<Either<String, String>> sendResetOtp({required String email});
+
+  Future<Either<String, String>> resetPasswordWithOtp({
+    required String email,
+    required String otp,
+    required String password,
+    required String passwordConfirmation,
+  });
 }

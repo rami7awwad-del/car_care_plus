@@ -15,3 +15,13 @@ class AuthFailure extends AuthState {
   final String errorMessage;
   AuthFailure(this.errorMessage);
 }
+
+class SendOtpSuccess extends AuthState {
+  final String message;
+  SendOtpSuccess(this.message);
+}
+
+class ResetPasswordSuccess extends AuthState {
+  final String message;
+  ResetPasswordSuccess(this.message);
+}
