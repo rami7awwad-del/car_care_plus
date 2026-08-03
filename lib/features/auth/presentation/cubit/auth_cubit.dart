@@ -1,6 +1,8 @@
 // lib/features/auth/presentation/cubit/auth_cubit.dart
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:car_care_plus/core/network/auth_session.dart';
+import 'package:car_care_plus/features/auth/data/user_model.dart';
 import 'package:car_care_plus/features/auth/domain/repositories/auth_repository.dart';
 import 'package:car_care_plus/features/auth/presentation/cubit/auth_state.dart';
 
@@ -9,12 +11,28 @@ class AuthCubit extends Cubit<AuthState> {
 
   AuthCubit({required this.authRepository}) : super(AuthInitial());
 
+  // حفظ جلسة المستخدم (توكن + بيانات) عند نجاح المصادقة
+  void _saveSession(UserModel user) {
+    AuthSession.instance.setUser(
+      token: user.token,
+      role: user.role,
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      imageUrl: user.imageUrl,
+    );
+  }
+
   Future<void> login({required String email, required String password}) async {
     emit(AuthLoading());
     final result = await authRepository.login(email: email, password: password);
     result.fold(
       (failureMessage) => emit(AuthFailure(failureMessage)),
-      (userModel) => emit(AuthSuccess(userModel)),
+      (userModel) {
+        _saveSession(userModel);
+        emit(AuthSuccess(userModel));
+      },
     );
   }
 
@@ -35,7 +53,10 @@ class AuthCubit extends Cubit<AuthState> {
     );
     result.fold(
       (failureMessage) => emit(AuthFailure(failureMessage)),
-      (userModel) => emit(AuthSuccess(userModel)),
+      (userModel) {
+        _saveSession(userModel);
+        emit(AuthSuccess(userModel));
+      },
     );
   }
 
@@ -66,7 +87,10 @@ class AuthCubit extends Cubit<AuthState> {
     );
     result.fold(
       (failureMessage) => emit(AuthFailure(failureMessage)),
-      (userModel) => emit(AuthSuccess(userModel)),
+      (userModel) {
+        _saveSession(userModel);
+        emit(AuthSuccess(userModel));
+      },
     );
   }
 

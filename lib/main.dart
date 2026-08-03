@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:car_care_plus/Localization/l10n/app_localization.dart';
+import 'package:car_care_plus/core/network/dio_factory.dart';
 import 'package:car_care_plus/core/routing/app_routes.dart';
 import 'package:car_care_plus/features/auth/data/auth_remote_data_source.dart';
 import 'package:car_care_plus/features/auth/data/auth_repository_impl.dart';
@@ -31,7 +31,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
 
     // 1️⃣ تهيئة الطبقات الخاصة بـ Auth
-    final dio = Dio();
+    final dio = createDio();
     final authRemoteDataSource = AuthRemoteDataSourceImpl(dio: dio);
     _authRepository = AuthRepositoryImpl(
       remoteDataSource: authRemoteDataSource,
