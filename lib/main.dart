@@ -1,8 +1,8 @@
+import 'package:car_care_plus/core/networking/dio_factory.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
 import 'package:car_care_plus/Localization/l10n/app_localization.dart';
 import 'package:car_care_plus/core/routing/app_routes.dart';
 import 'package:car_care_plus/features/auth/data/auth_remote_data_source.dart';
@@ -31,7 +31,8 @@ class _MyAppState extends State<MyApp> {
     super.initState();
 
     // 1️⃣ تهيئة الطبقات الخاصة بـ Auth
-    final dio = Dio();
+    final dio = DioFactory.getDio();
+    ;
     final authRemoteDataSource = AuthRemoteDataSourceImpl(dio: dio);
     _authRepository = AuthRepositoryImpl(
       remoteDataSource: authRemoteDataSource,
@@ -62,7 +63,7 @@ class _MyAppState extends State<MyApp> {
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             // 🔗 استخدام الروت نيم هنا
-            initialRoute: Routes.login,
+            initialRoute: Routes.mainLayout,
             onGenerateRoute: _appRouter.generateRoute,
           ),
         );

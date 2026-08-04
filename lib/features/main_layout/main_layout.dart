@@ -1,9 +1,11 @@
+import 'package:car_care_plus/features/auth/presentation/profile_page.dart';
+import 'package:car_care_plus/features/home/ui/views/home_view.dart';
 import 'package:flutter/material.dart';
 import 'package:car_care_plus/core/resources/app_color.dart';
 import 'package:car_care_plus/core/resources/text_style.dart';
 import 'package:car_care_plus/features/home/presentation/home_page.dart';
 import 'package:car_care_plus/features/orders/presentation/orders_page.dart';
-import 'package:car_care_plus/features/profile/presentation/profile_page.dart';
+
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -19,7 +21,7 @@ class _MainLayoutState extends State<MainLayout> {
   // الترتيب مع RTL: البروفايل يميناً، الرئيسية وسطاً، الطلبات يساراً
   final List<Widget> _pages = const [
     ProfilePage(),
-    HomePage(),
+    HomeView(),
     OrdersPage(),
   ];
 

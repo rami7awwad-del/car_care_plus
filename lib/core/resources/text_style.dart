@@ -2,51 +2,42 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class TextStyles {
- 
+  // تحويلها إلى Getters تضمن حساب القيمة الصحيحة لحظة استدعائها وليس عند تحميل الكلاس
+  static TextStyle get Size32 => TextStyle(
+        fontSize: 32.sp,
+        fontWeight: FontWeight.bold,
+        height: 1.2,
+      );
 
-  // حجم 1: كبير جداً (Display) - 32px
-  static TextStyle Size32 = TextStyle(
-    fontSize: 32.sp,
-    fontWeight: FontWeight.bold,
-    height: 1.2,
-  );
+  static TextStyle get Size28 => TextStyle(
+        fontSize: 28.sp,
+        fontWeight: FontWeight.bold,
+        height: 1.25,
+      );
 
-  // حجم 2: كبير (Heading) - 28px
-  static TextStyle Size28 = TextStyle(
-    fontSize: 28.sp,
-    fontWeight: FontWeight.bold,
-    height: 1.25,
-  );
+  static TextStyle get Size24 => TextStyle(
+        fontSize: 24.sp,
+        fontWeight: FontWeight.w600,
+        height: 1.3,
+      );
 
-  // حجم 3: متوسط (Body) - 24px
-  static TextStyle Size24 = TextStyle(
-    fontSize: 24.sp,
-    fontWeight: FontWeight.w600,
-    height: 1.3,
-  );
+  static TextStyle get Size18 => TextStyle(
+        fontSize: 18.sp,
+        fontWeight: FontWeight.normal,
+        height: 1.4,
+      );
 
-  // حجم 4: صغير (Caption) - 18px
-  static TextStyle Size18 = TextStyle(
-    fontSize: 18.sp,
-    fontWeight: FontWeight.normal,
-    height: 1.4,
-  );
+  static TextStyle get Size15 => TextStyle(
+        fontSize: 15.sp,
+        fontWeight: FontWeight.normal,
+        height: 1.4,
+      );
 
-  // حجم 5: صغير جداً (Small) - 15px
-  static TextStyle Size15 = TextStyle(
-    fontSize: 15.sp,
-    fontWeight: FontWeight.normal,
-    height: 1.4,
-  );
-
-  // ==================== ستايلات خاصة (للنصوص الصغيرة جداً) ====================
-
-  // حجم 6: 10px
-  static TextStyle Size10 = TextStyle(
-    fontSize: 10.sp,
-    fontWeight: FontWeight.normal,
-    height: 1.4,
-  );
+  static TextStyle get Size10 => TextStyle(
+        fontSize: 10.sp,
+        fontWeight: FontWeight.normal,
+        height: 1.4,
+      );
 }
 
 // ==================== Extension لتسهيل التخصيص ====================

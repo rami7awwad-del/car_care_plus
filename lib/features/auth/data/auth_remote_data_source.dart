@@ -29,7 +29,6 @@ abstract class AuthRemoteDataSource {
     bool isActive = false,
   });
 
-  // 🆕
   Future<String> sendResetOtp({required String email});
 
   Future<String> resetPasswordWithOtp({
@@ -37,6 +36,16 @@ abstract class AuthRemoteDataSource {
     required String otp,
     required String password,
     required String passwordConfirmation,
+  });
+
+  // 🆕 Profile Abstract Methods
+  Future<UserModel> getProfile();
+
+  Future<UserModel> updateProfile({
+    String? name,
+    String? email,
+    String? phone,
+    String? imagePath,
   });
 }
 
@@ -121,7 +130,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
   }
 
-  // 🆕 التنفيذ الجديد لـ OTP
   @override
   Future<String> sendResetOtp({required String email}) async {
     try {
@@ -160,6 +168,50 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         return response.data['message'] ?? 'تم إعادة تعيين كلمة المرور بنجاح';
       } else {
         throw Exception(response.data['message'] ?? 'فشل إعادة تعيين كلمة المرور');
+      }
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'تعذر الاتصال بالسيرفر');
+    }
+  }
+
+  // 🆕 Profile Implementation
+  @override
+  Future<UserModel> getProfile() async {
+    try {
+      final response = await dio.get('$baseUrl/profile/showProfile');
+      if (response.statusCode == 200 && response.data['status'] == 1) {
+        return UserModel.fromJson(response.data);
+      } else {
+        throw Exception(response.data['message'] ?? 'فشل جلب بيانات البروفايل');
+      }
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'تعذر الاتصال بالسيرفر');
+    }
+  }
+
+  @override
+  Future<UserModel> updateProfile({
+    String? name,
+    String? email,
+    String? phone,
+    String? imagePath,
+  }) async {
+    try {
+      Map<String, dynamic> dataMap = {};
+      if (name != null && name.isNotEmpty) dataMap['name'] = name;
+      if (email != null && email.isNotEmpty) dataMap['email'] = email;
+      if (phone != null && phone.isNotEmpty) dataMap['phone'] = phone;
+      if (imagePath != null && imagePath.isNotEmpty) {
+        dataMap['image_url'] = await MultipartFile.fromFile(imagePath);
+      }
+
+      final formData = FormData.fromMap(dataMap);
+      final response = await dio.post('$baseUrl/profile/updateProfile', data: formData);
+
+      if (response.statusCode == 200 && response.data['status'] == 1) {
+        return UserModel.fromJson(response.data);
+      } else {
+        throw Exception(response.data['message'] ?? 'فشل تحديث البيانات');
       }
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'تعذر الاتصال بالسيرفر');

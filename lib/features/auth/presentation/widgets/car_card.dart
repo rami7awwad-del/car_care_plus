@@ -1,9 +1,12 @@
+import 'package:car_care_plus/features/auth/presentation/widgets/car_model.dart';
 import 'package:flutter/material.dart';
 import 'package:car_care_plus/core/resources/app_color.dart';
 import 'package:car_care_plus/core/resources/text_style.dart';
-import 'package:car_care_plus/features/profile/data/car_model.dart';
 
-// بطاقة سيارة المستخدم داخل واجهة البروفايل
+
+
+
+
 class CarCard extends StatelessWidget {
   final CarModel car;
 
