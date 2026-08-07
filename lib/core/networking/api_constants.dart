@@ -8,13 +8,20 @@ class ApiConstants {
 
   // Operations Endpoints (تحديث الصيغ لتطابق لارافيل)
   static const String category = 'categories';     // تعديل من category إلى categories
-  static const String service = 'services';         // تعديل من service إلى services
-  static const String subServices = 'sub-services'; // أو subServices حسب ما هو معرف في لارافيل
+  static const String service = 'services'; 
+  static String servicesByCategory(int categoryId) => 'categories/$categoryId/services';
+  static String subServicesByService(int serviceId) => 'services/$serviceId/sub-services';
   static const String carTypes = 'car-types';
   static const String carBrands = 'car-brands';
   static const String package = 'packages';
   static const String userPackage = 'user-packages';
   static const String points = 'points';
   static const String profile = 'profile';
-  static const String branche = 'branches';         // تعديل من branche إلى branches
+  static const String branche = 'branches';      
+  // Cars Endpoints
+static const String userCars = 'cars/indexClient'; // جلب سيارات المستخدم
+static const String createCar = 'cars';             // إنشاء/إضافة سيارة جديدة (POST)
+static const String showCar = 'cars/show/';        // عرض تفاصيل سيارة
+static const String updateCar = 'cars/update/';    // تعديل بيانات سيارة
+static const String deleteCar = 'cars/delete/';    // حذف سيارة
 }

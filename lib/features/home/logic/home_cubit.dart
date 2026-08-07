@@ -14,45 +14,51 @@ class HomeCubit extends Cubit<HomeState> {
   int? selectedCategoryId;
 
   /// تحميل بيانات الشاشة الرئيسية عند الفتح
-  Future<void> getHomeData() async {
-    emit(HomeLoadingState());
-    try {
-      final results = await Future.wait([
-        _homeRepo.getCategories(),
-        _homeRepo.getServices(),
-      ]);
+ Future<void> getHomeData() async {
+  if (isClosed) return;
+  emit(HomeLoadingState());
 
-      categories = results[0] as List<CategoryModel>;
-      services = results[1] as List<ServiceModel>;
+  try {
+    final results = await Future.wait([
+      _homeRepo.getCategories(),
+      _homeRepo.getServices(),
+    ]);
 
-      emit(HomeSuccessState(
-        categories: categories,
-        services: services,
-        selectedCategoryId: selectedCategoryId,
-      ));
-    } catch (error) {
-      emit(HomeErrorState(error.toString()));
-    }
+    // التحقق مجدداً بعد انتهاء عمليات الـ await
+    if (isClosed) return;
+
+    categories = results[0] as List<CategoryModel>;
+    services = results[1] as List<ServiceModel>;
+
+    emit(HomeSuccessState(
+      categories: categories,
+      services: services,
+      selectedCategoryId: selectedCategoryId,
+    ));
+  } catch (error) {
+    if (isClosed) return;
+    emit(HomeErrorState(error.toString()));
   }
+}
 
   /// الفلترة حسب قسم محدد عند الضغط عليه
-  Future<void> filterByCategory(int? categoryId) async {
-    if (selectedCategoryId == categoryId) {
-      selectedCategoryId = null; // إلغاء التحديد وعرض الكل
-    } else {
-      selectedCategoryId = categoryId;
-    }
-
-    emit(ServicesLoadingState());
-    try {
-      services = await _homeRepo.getServices(categoryId: selectedCategoryId);
-      emit(HomeSuccessState(
-        categories: categories,
-        services: services,
-        selectedCategoryId: selectedCategoryId,
-      ));
-    } catch (error) {
-      emit(HomeErrorState(error.toString()));
-    }
+ Future<void> filterByCategory(int? categoryId) async {
+  if (selectedCategoryId == categoryId) {
+    selectedCategoryId = null; // إلغاء التحديد وعرض الكل
+  } else {
+    selectedCategoryId = categoryId;
   }
+
+  emit(ServicesLoadingState());
+  try {
+    services = await _homeRepo.getServices(categoryId: selectedCategoryId);
+    emit(HomeSuccessState(
+      categories: categories,
+      services: services,
+      selectedCategoryId: selectedCategoryId,
+    ));
+  } catch (error) {
+    emit(HomeErrorState(error.toString()));
+  }
+}
 }

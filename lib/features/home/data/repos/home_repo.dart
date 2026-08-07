@@ -15,17 +15,14 @@ class HomeRepo {
     return data.map((e) => CategoryModel.fromJson(e)).toList();
   }
 
-  /// جلب قائمة الخدمات (إمكانية تصفيتها حسب رقم التصنيف)
+  /// جلب قائمة الخدمات (كل الخدمات أو خدمات قسم محدد)
   Future<List<ServiceModel>> getServices({int? categoryId}) async {
-    final Map<String, dynamic> queryParameters = {};
-    if (categoryId != null) {
-      queryParameters['category_id'] = categoryId;
-    }
+    // تحديد الـ Endpoint بناءً على اختيار القسم
+    final String endpoint = categoryId != null
+        ? ApiConstants.servicesByCategory(categoryId)
+        : ApiConstants.service;
 
-    final response = await _apiService.get(
-      endpoint: ApiConstants.service,
-      queryParameters: queryParameters,
-    );
+    final response = await _apiService.get(endpoint: endpoint);
     final List data = response.data['data'] as List;
     return data.map((e) => ServiceModel.fromJson(e)).toList();
   }

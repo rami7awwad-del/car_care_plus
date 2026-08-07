@@ -7,7 +7,6 @@ import 'package:car_care_plus/features/auth/data/user_model.dart';
 import 'package:car_care_plus/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:car_care_plus/features/auth/presentation/cubit/auth_state.dart';
 import 'package:car_care_plus/features/auth/presentation/widgets/car_model.dart';
-import 'package:car_care_plus/features/auth/presentation/widgets/car_card.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -263,14 +262,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           value: user.email ?? 'غير متوفر',
                         ),
                         const SizedBox(height: 28),
-                        Text(
-                          'سيارتي',
-                          style: TextStyles.Size18
-                              .withColor(AppColors.darkBlueBlack)
-                              .withWeight(FontWeight.bold),
-                        ),
-                        const SizedBox(height: 14),
-                        const CarCard(car: CarModel.myCar),
+                        
                       ],
                     ),
                   ),

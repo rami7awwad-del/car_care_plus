@@ -17,6 +17,9 @@ static const Color darkCardBackground = Color(0xFF1E293B); // لون البطا�
   static const Color coolGrey = Color(0xFF8A99AD);
   static const Color borderGrey = Color(0xFFE2E8F0);
 
+
+static const Color goldAccent = Color(0xFFFFB800);
+static const Color lightGoldSurface = Color(0xFFFFF8E6);
   // ==================== ألوان الحالات والرسائل ====================
   static const Color errorColor = Color(0xFFE74C3C);
   static const Color successColor = Color(0xFF2ECC71);

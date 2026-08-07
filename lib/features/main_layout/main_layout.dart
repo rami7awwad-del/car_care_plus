@@ -1,11 +1,10 @@
 import 'package:car_care_plus/features/auth/presentation/profile_page.dart';
+import 'package:car_care_plus/features/cars/ui/views/my_cars_view.dart';
 import 'package:car_care_plus/features/home/ui/views/home_view.dart';
+import 'package:car_care_plus/features/orders/presentation/orders_page.dart';
 import 'package:flutter/material.dart';
 import 'package:car_care_plus/core/resources/app_color.dart';
 import 'package:car_care_plus/core/resources/text_style.dart';
-import 'package:car_care_plus/features/home/presentation/home_page.dart';
-import 'package:car_care_plus/features/orders/presentation/orders_page.dart';
-
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -15,12 +14,17 @@ class MainLayout extends StatefulWidget {
 }
 
 class _MainLayoutState extends State<MainLayout> {
-  // نبدأ افتراضياً على الواجهة الوسطى (الرئيسية)
-  int _currentIndex = 1;
+  // نبدأ افتراضياً على الواجهة الرئيسية (Index 2)
+  int _currentIndex = 2;
 
-  // الترتيب مع RTL: البروفايل يميناً، الرئيسية وسطاً، الطلبات يساراً
+  // الترتيب من اليمين لليسار (RTL):
+  // 0: حسابي (البروفايل)
+  // 1: الكراج (سياراتي)
+  // 2: الرئيسية
+  // 3: طلباتي
   final List<Widget> _pages = const [
     ProfilePage(),
+    MyCarsView(),
     HomeView(),
     OrdersPage(),
   ];
@@ -29,7 +33,10 @@ class _MainLayoutState extends State<MainLayout> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.lightBlueSurface,
-      body: IndexedStack(index: _currentIndex, children: _pages),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
+      ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: AppColors.surfaceWhite,
@@ -57,6 +64,11 @@ class _MainLayoutState extends State<MainLayout> {
               icon: Icon(Icons.person_outline_rounded),
               activeIcon: Icon(Icons.person_rounded),
               label: 'حسابي',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.directions_car_outlined),
+              activeIcon: Icon(Icons.directions_car_filled_rounded),
+              label: 'الكراج',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.home_outlined),
