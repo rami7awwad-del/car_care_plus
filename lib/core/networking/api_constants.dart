@@ -17,7 +17,11 @@ class ApiConstants {
   static const String userPackage = 'user-packages';
   static const String points = 'points';
   static const String profile = 'profile';
-  static const String branche = 'branches';      
+  static const String branche = 'branches';
+
+  // Company Endpoints
+  static const String myCompany = 'companies/my'; // شركة المستخدم الحالي
+  static const String company = 'companies/';      // تعديل: companies/{id}
   // Cars Endpoints
 static const String userCars = 'cars/indexClient'; // جلب سيارات المستخدم
 static const String createCar = 'cars';             // إنشاء/إضافة سيارة جديدة (POST)
