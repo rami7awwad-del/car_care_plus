@@ -70,7 +70,7 @@ class AuthCubit extends Cubit<AuthState> {
     );
   }
 
-  // 🆕 دالة طلب الـ OTP
+  
   Future<void> sendResetOtp({required String email}) async {
     emit(AuthLoading());
     final result = await authRepository.sendResetOtp(email: email);
@@ -80,7 +80,7 @@ class AuthCubit extends Cubit<AuthState> {
     );
   }
 
-  // 🆕 دالة إرسال الـ OTP وكلمة المرور الجديدة للتأكيد
+ 
   Future<void> resetPasswordWithOtp({
     required String email,
     required String otp,
@@ -99,4 +99,35 @@ class AuthCubit extends Cubit<AuthState> {
       (successMessage) => emit(ResetPasswordSuccess(successMessage)),
     );
   }
+
+// 📥 جلب البروفايل
+Future<void> fetchProfile() async {
+  emit(AuthLoading());
+  final result = await authRepository.getProfile();
+  result.fold(
+    (failureMessage) => emit(AuthFailure(failureMessage)),
+    (userModel) => emit(AuthSuccess(userModel)),
+  );
+}
+
+// ✏️ تحديث البروفايل
+Future<void> updateProfile({
+  String? name,
+  String? email,
+  String? phone,
+  String? imagePath,
+}) async {
+  emit(AuthLoading());
+  final result = await authRepository.updateProfile(
+    name: name,
+    email: email,
+    phone: phone,
+    imagePath: imagePath,
+  );
+  result.fold(
+    (failureMessage) => emit(AuthFailure(failureMessage)),
+    (userModel) => emit(AuthSuccess(userModel)),
+  );
+}
+
 }

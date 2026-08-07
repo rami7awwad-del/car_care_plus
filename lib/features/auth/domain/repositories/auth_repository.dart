@@ -38,4 +38,14 @@ abstract class AuthRepository {
     required String password,
     required String passwordConfirmation,
   });
+
+  // 🆕 Profile Functions
+  Future<Either<String, UserModel>> getProfile();
+
+  Future<Either<String, UserModel>> updateProfile({
+    String? name,
+    String? email,
+    String? phone,
+    String? imagePath,
+  });
 }
