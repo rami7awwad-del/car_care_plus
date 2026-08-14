@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../data/models/booking_quote_request_body.dart';
 import '../../logic/booking_cubit.dart';
 import '../../logic/booking_state.dart';
-import '../../data/models/booking_quote_request_body.dart';
+import 'package:car_care_plus/core/resources/app_color.dart';
+import 'package:car_care_plus/core/resources/text_style.dart';
 import '../widgets/booking_schedule_picker.dart';
-import '../widgets/payment_method_selector.dart';
 import '../widgets/booking_summary_bottom_sheet.dart';
+import '../widgets/location_picker_widget.dart';
+import '../widgets/payment_method_selector.dart';
 
 class BookingSetupView extends StatefulWidget {
   final int serviceId;
@@ -26,13 +30,14 @@ class BookingSetupView extends StatefulWidget {
 }
 
 class _BookingSetupViewState extends State<BookingSetupView> {
- bool _bookingType = false; 
+  bool _bookingType = false;
   String? _scheduledAt;
   String _paymentMethod = 'cash';
   final TextEditingController _notesController = TextEditingController();
-  // إحداثيات افتراضية (يمكن استبدالها بـ Geolocation)
-  final double _lat = 24.7136;
-  final double _lng = 46.6753;
+
+  double _lat = 24.7136;
+  double _lng = 46.6753;
+  String? _locationAddress;
 
   @override
   void dispose() {
@@ -41,32 +46,36 @@ class _BookingSetupViewState extends State<BookingSetupView> {
   }
 
   void _getQuote() {
-
     if (_bookingType && _scheduledAt == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('يرجى تحديد تاريخ الحجز أولاً'),
-        backgroundColor: Colors.orange,
-      ),
-    );
-    return;
-  }
-  
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'يرجى تحديد تاريخ ووقت الحجز المجدول أولاً',
+            style: TextStyles.Size15.withColor(Colors.white),
+          ),
+          backgroundColor: AppColors.warningColor,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+        ),
+      );
+      return;
+    }
+
     final requestBody = BookingQuoteRequestBody(
-  carIds: widget.carIds,
-  serviceId: widget.serviceId,
-  bookingType: _bookingType,
-  paymentMethod: _paymentMethod,
-  // ⚠️ نمرر التاريخ فقط إذا كان الحجز مجدولاً
-  scheduledAt: _bookingType ? _scheduledAt : null, 
-  locationLat: _lat,
-  locationLng: _lng,
-  isVip: 1,
-  subServiceIds: widget.subServiceIds,
-  materials: widget.materials,
-  notes: _notesController.text.isNotEmpty ? _notesController.text : null,
-  branchId: 1, // 👈 استخدام branchId بدلاً من workshopId
-);
+      carIds: widget.carIds,
+      serviceId: widget.serviceId,
+      bookingType: _bookingType,
+      paymentMethod: _paymentMethod,
+      scheduledAt: _bookingType ? _scheduledAt : null,
+      locationLat: _lat,
+      locationLng: _lng,
+      locationAddress: _locationAddress,
+      isVip: 1,
+      subServiceIds: widget.subServiceIds,
+      materials: widget.materials,
+      notes: _notesController.text.isNotEmpty ? _notesController.text : null,
+      branchId: 1,
+    );
 
     context.read<BookingCubit>().emitBookingQuote(requestBody);
   }
@@ -74,23 +83,32 @@ class _BookingSetupViewState extends State<BookingSetupView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('تفاصيل الحجز'), centerTitle: true),
+      backgroundColor: AppColors.bgLight,
+      appBar: AppBar(
+        title: Text(
+          'تفاصيل الحجز',
+          style: TextStyles.Size18.withWeight(FontWeight.bold).withColor(AppColors.darkBlueBlack),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: AppColors.darkBlueBlack),
+      ),
       body: BlocListener<BookingCubit, BookingState>(
         listener: (context, state) {
           if (state is BookingQuoteErrorState) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
+                content: Text(state.message, style: TextStyles.Size15.withColor(Colors.white)),
+                backgroundColor: AppColors.errorColor,
+                behavior: SnackBarBehavior.floating,
               ),
             );
           } else if (state is BookingQuoteSuccessState) {
             showModalBottomSheet(
               context: context,
               isScrollControlled: true,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-              ),
+              backgroundColor: Colors.transparent,
               builder: (_) => BlocProvider.value(
                 value: context.read<BookingCubit>(),
                 child: BookingSummaryBottomSheet(
@@ -101,73 +119,133 @@ class _BookingSetupViewState extends State<BookingSetupView> {
           }
         },
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
+          physics: const BouncingScrollPhysics(),
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 1. نوع الحجز والتوقيت
-              // 1. نوع الحجز والتوقيت
               BookingSchedulePicker(
-                bookingType:
-                    _bookingType, // متغير من نوع bool (false للفوري، true للمجدول)
+                bookingType: _bookingType,
                 onTypeChanged: (isScheduled) {
                   setState(() {
                     _bookingType = isScheduled;
-                    if (!_bookingType) {
-                       _scheduledAt = null; // 👈 إعادتها لـ null عند اختيار الفوري
-      }
+                    if (!_bookingType) _scheduledAt = null;
                   });
                 },
-                onDateTimeSelected: (dateTime) =>
-                    setState(() => _scheduledAt = dateTime),
+                onDateTimeSelected: (dateTime) => setState(() => _scheduledAt = dateTime),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
 
-              // 2. اختيار طريقة الدفع
+              // 2. تحديد الموقع الجغرافي
+              LocationPickerWidget(
+                initialLat: _lat,
+                initialLng: _lng,
+                onLocationChanged: (lat, lng, address) {
+                  setState(() {
+                    _lat = lat;
+                    _lng = lng;
+                    _locationAddress = address;
+                  });
+                },
+              ),
+              SizedBox(height: 20.h),
+
+              // 3. اختيار طريقة الدفع
               PaymentMethodSelector(
                 selectedMethod: _paymentMethod,
-                onMethodChanged: (method) =>
-                    setState(() => _paymentMethod = method),
+                onMethodChanged: (method) => setState(() => _paymentMethod = method),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
 
-              // 3. ملاحظات إضافية
+              // 4. ملاحظات إضافية
               Text(
                 'ملاحظات إضافية',
-                style: Theme.of(context).textTheme.titleMedium,
+                style: TextStyles.Size18.withWeight(FontWeight.bold).withColor(AppColors.darkBlueBlack),
               ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _notesController,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  hintText: 'اكتب أي تفاصيل أخرى ترغب في إبلاغ الورشة بها...',
-                  border: OutlineInputBorder(),
+              SizedBox(height: 10.h),
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceWhite,
+                  borderRadius: BorderRadius.circular(16.r),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: AppColors.cardShadowColor,
+                      blurRadius: 10,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: TextField(
+                  controller: _notesController,
+                  maxLines: 3,
+                  style: TextStyles.Size15.withColor(AppColors.darkBlueBlack),
+                  decoration: InputDecoration(
+                    hintText: 'اكتب أي تفاصيل أخرى ترغب في إبلاغ الورشة بها...',
+                    hintStyle: TextStyles.Size15.withColor(AppColors.coolGrey),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16.r),
+                      borderSide: const BorderSide(color: AppColors.borderGrey),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16.r),
+                      borderSide: const BorderSide(color: AppColors.borderGrey),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16.r),
+                      borderSide: const BorderSide(color: AppColors.primaryBlue, width: 1.5),
+                    ),
+                    contentPadding: EdgeInsets.all(16.r),
+                  ),
                 ),
               ),
-              const SizedBox(height: 30),
+              SizedBox(height: 32.h),
 
-              // 4. زر حساب التكلفة
+              // 5. زر حساب التكلفة
               BlocBuilder<BookingCubit, BookingState>(
                 builder: (context, state) {
                   final isLoading = state is BookingQuoteLoadingState;
-                  return ElevatedButton(
-                    onPressed: isLoading ? null : _getQuote,
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+                  return Container(
+                    width: double.infinity,
+                    height: 54.h,
+                    decoration: BoxDecoration(
+                      gradient: AppColors.buttonGradient,
+                      borderRadius: BorderRadius.circular(16.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primaryBlue.withOpacity(0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
                     ),
-                    child: isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text(
-                            'حساب التكلفة وعرض المجموع',
-                            style: TextStyle(fontSize: 16),
-                          ),
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : _getQuote,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16.r),
+                        ),
+                      ),
+                      child: isLoading
+                          ? SizedBox(
+                              width: 24.w,
+                              height: 24.h,
+                              child: const CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2.5,
+                              ),
+                            )
+                          : Text(
+                              'حساب التكلفة وعرض المجموع',
+                              style: TextStyles.Size18.withWeight(FontWeight.bold).withColor(Colors.white),
+                            ),
+                    ),
                   );
                 },
               ),
+              SizedBox(height: 20.h),
             ],
           ),
         ),

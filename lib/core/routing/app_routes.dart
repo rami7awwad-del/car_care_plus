@@ -1,12 +1,16 @@
+import 'package:car_care_plus/core/networking/api_service.dart';
 import 'package:car_care_plus/features/auth/presentation/forgotPasswordPage.dart';
 import 'package:car_care_plus/features/auth/presentation/resetPasswordPage.dart';
 import 'package:car_care_plus/features/auth/presentation/welcome_page.dart';
 import 'package:car_care_plus/features/cars/data/models/car_model.dart'; // 👈 استيراد موديل السيارة
 import 'package:car_care_plus/features/cars/ui/views/edit_car_page.dart'; // 👈 استيراد شاشة التعديل (أصلح المسار حسب مكان الملف)
 import 'package:car_care_plus/features/main_layout/main_layout.dart';
+import 'package:car_care_plus/features/wallet_and_payments/data/repos/wallet_payment_repo.dart';
+import 'package:car_care_plus/features/wallet_and_payments/ui/screens/payment_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:car_care_plus/features/auth/presentation/login_page.dart';
 import 'package:car_care_plus/features/auth/presentation/register_page.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class Routes {
   static const String login = '/login';
@@ -16,6 +20,7 @@ class Routes {
   static const String forgotPassword = '/forgotPassword';
   static const String resetPassword = '/resetPassword';
   static const String editCar = '/editCar'; // 👈 1. إضافة مسار تعديل السيارة
+static const String paymentDetails = '/paymentDetails';
 }
 
 class AppRouter {
@@ -54,6 +59,23 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => EditCarPage(car: car), // أو اسم الشاشة المخصصة لديك
         );
+
+
+
+      case Routes.paymentDetails:
+        final paymentId = settings.arguments as int;
+        return MaterialPageRoute(
+          builder: (context) {
+            final apiService = context.read<ApiService>();
+            return PaymentDetailsScreen(
+              paymentId: paymentId,
+              repo: WalletPaymentRepo(apiService),
+            );
+          },
+        );
+
+
+
 
       default:
         return MaterialPageRoute(

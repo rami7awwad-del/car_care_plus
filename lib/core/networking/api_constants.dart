@@ -6,9 +6,9 @@ class ApiConstants {
   static const String login = 'login';
   static const String register = 'register';
 
-  // Operations Endpoints (تحديث الصيغ لتطابق لارافيل)
-  static const String category = 'categories';     // تعديل من category إلى categories
-  static const String service = 'services'; 
+  // Operations Endpoints
+  static const String category = 'categories';
+  static const String service = 'services';
   static String servicesByCategory(int categoryId) => 'categories/$categoryId/services';
   static String subServicesByService(int serviceId) => 'services/$serviceId/sub-services';
   static const String carTypes = 'car-types';
@@ -17,24 +17,28 @@ class ApiConstants {
   static const String userPackage = 'user-packages';
   static const String points = 'points';
   static const String profile = 'profile';
-  static const String branche = 'branches';      
+  static const String branche = 'branches';
+
+  // Wallet & Payments Endpoints
+  static const String myWallet = 'wallets/my';
+  static const String payments = 'payments';
+  static String showPayment(int paymentId) => 'payments/$paymentId';
+  static String walletTransactions({int? customerId}) =>
+      customerId != null ? 'wallet-transactions/$customerId' : 'wallet-transactions';
+  static String showWalletTransaction(int transactionId) =>
+      'wallet-transactions/show/$transactionId';
+
   // Cars Endpoints
-static const String userCars = 'indexClient'; 
-static const String materials = 'materials';
-// Booking Endpoints
-static const String bookingQuote = 'bookings/quote';
-static const String bookingConfirm = 'bookings/confirm';
-  // إضافة سيارة جديدة
-  // إذا كان المسار داخل لارافيل يتبع operations/car/store:
-static const String createCar = ''; 
+  static const String userCars = 'indexClient';
+  static const String materials = 'materials';
 
+  // Booking Endpoints
+  static const String bookingQuote = 'bookings/quote';
+  static const String bookingConfirm = 'bookings/confirm';
 
-  // عرض تفاصيل سيارة
-  static const String showCar = 'show/'; 
-
-  // تعديل سيارة
-  static const String updateCar = 'update/'; 
-
-  // حذف سيارة
+  // Car Management Endpoints
+  static const String createCar = '';
+  static const String showCar = 'show/';
+  static const String updateCar = 'update/';
   static const String deleteCar = 'delete/';
 }

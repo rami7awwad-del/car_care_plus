@@ -1,8 +1,13 @@
+import 'package:car_care_plus/core/resources/app_color.dart';
+import 'package:car_care_plus/core/resources/text_style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import '../../data/models/booking_quote_response_model.dart';
 import '../../logic/booking_cubit.dart';
 import '../../logic/booking_state.dart';
+
 
 class BookingSummaryBottomSheet extends StatelessWidget {
   final QuoteData quoteData;
@@ -11,18 +16,25 @@ class BookingSummaryBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
+    return Container(
+      padding: EdgeInsets.all(24.r),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceWhite,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+      ),
       child: BlocConsumer<BookingCubit, BookingState>(
         listener: (context, state) {
           if (state is BookingConfirmErrorState) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+              SnackBar(content: Text(state.message), backgroundColor: AppColors.errorColor),
             );
           } else if (state is BookingConfirmSuccessState) {
-            Navigator.pop(context); // إغلاق الـ BottomSheet
+            Navigator.pop(context);
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('تم تأكيد الحجز بنجاح!'), backgroundColor: Colors.green),
+              const SnackBar(
+                content: Text('تم تأكيد الحجز بنجاح!'),
+                backgroundColor: AppColors.successColor,
+              ),
             );
           }
         },
@@ -35,52 +47,92 @@ class BookingSummaryBottomSheet extends StatelessWidget {
             children: [
               Center(
                 child: Container(
-                  width: 50,
-                  height: 5,
-                  decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
+                  width: 48.w,
+                  height: 5.h,
+                  decoration: BoxDecoration(
+                    color: AppColors.borderGrey,
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
                 ),
               ),
-              const SizedBox(height: 15),
-              Text('ملخص التكلفة', style: Theme.of(context).textTheme.titleLarge),
-              const Divider(height: 25),
+              SizedBox(height: 20.h),
+              Text(
+                'ملخص التكلفة',
+                style: TextStyles.Size24.withWeight(FontWeight.bold).withColor(AppColors.darkBlueBlack),
+              ),
+              Divider(height: 24.h, color: AppColors.borderGrey),
 
               if (quoteData.invoice != null && quoteData.invoice!.isNotEmpty)
                 ...quoteData.invoice!.first.priceItems?.map(
                       (item) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        padding: EdgeInsets.symmetric(vertical: 6.h),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(item.label),
-                            Text('${item.amount} SAR'),
+                            Text(
+                              item.label,
+                              style: TextStyles.Size15.withColor(AppColors.coolGrey),
+                            ),
+                            Text(
+                              '${item.amount} SAR',
+                              style: TextStyles.Size15.withWeight(FontWeight.w600).withColor(AppColors.darkBlueBlack),
+                            ),
                           ],
                         ),
                       ),
                     ) ??
                     [],
 
-              const Divider(height: 25),
+              Divider(height: 28.h, color: AppColors.borderGrey),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('المجموع الإجمالي', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                  Text('${quoteData.totalPrice} SAR',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.green)),
+                  Text(
+                    'المجموع الإجمالي',
+                    style: TextStyles.Size18.withWeight(FontWeight.bold).withColor(AppColors.darkBlueBlack),
+                  ),
+                  Text(
+                    '${quoteData.totalPrice} SAR',
+                    style: TextStyles.Size24.withWeight(FontWeight.bold).withColor(AppColors.successColor),
+                  ),
                 ],
               ),
-              const SizedBox(height: 25),
+              SizedBox(height: 28.h),
 
-              ElevatedButton(
-                onPressed: isConfirming
-                    ? null
-                    : () => context.read<BookingCubit>().emitConfirmBooking(quoteData.quoteToken),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50),
-                  backgroundColor: Colors.green,
+              Container(
+                width: double.infinity,
+                height: 54.h,
+                decoration: BoxDecoration(
+                  color: AppColors.successColor,
+                  borderRadius: BorderRadius.circular(16.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.successColor.withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-                child: isConfirming
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('تأكيد الحجز النهائي', style: TextStyle(fontSize: 16, color: Colors.white)),
+                child: ElevatedButton(
+                  onPressed: isConfirming
+                      ? null
+                      : () => context.read<BookingCubit>().emitConfirmBooking(quoteData.quoteToken),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+                  ),
+                  child: isConfirming
+                      ? SizedBox(
+                          width: 24.w,
+                          height: 24.h,
+                          child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                        )
+                      : Text(
+                          'تأكيد الحجز النهائي',
+                          style: TextStyles.Size18.withWeight(FontWeight.bold).withColor(Colors.white),
+                        ),
+                ),
               ),
             ],
           );

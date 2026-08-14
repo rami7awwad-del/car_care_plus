@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:car_care_plus/core/resources/app_color.dart';
 import 'package:car_care_plus/core/resources/text_style.dart';
 import 'package:car_care_plus/core/widgets/gradient_header.dart';
 import 'package:car_care_plus/features/auth/data/user_model.dart';
 import 'package:car_care_plus/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:car_care_plus/features/auth/presentation/cubit/auth_state.dart';
-import 'package:car_care_plus/features/auth/presentation/widgets/car_model.dart';
+import 'package:car_care_plus/features/wallet_and_payments/ui/screens/wallet_screen.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -33,16 +34,16 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: AppColors.surfaceWhite,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       ),
       builder: (bottomSheetContext) {
         return Padding(
           padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 24,
-            bottom: MediaQuery.of(bottomSheetContext).viewInsets.bottom + 24,
+            left: 20.w,
+            right: 20.w,
+            top: 24.h,
+            bottom: MediaQuery.of(bottomSheetContext).viewInsets.bottom + 24.h,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -58,12 +59,12 @@ class _ProfilePageState extends State<ProfilePage> {
                         .withWeight(FontWeight.bold),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: Icon(Icons.close, size: 24.r),
                     onPressed: () => Navigator.pop(bottomSheetContext),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               
               // حقل الاسم
               TextField(
@@ -72,11 +73,11 @@ class _ProfilePageState extends State<ProfilePage> {
                   labelText: 'الاسم الكامل',
                   prefixIcon: const Icon(Icons.person_outline),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                 ),
               ),
-              const SizedBox(height: 14),
+              SizedBox(height: 14.h),
 
               // حقل البريد
               TextField(
@@ -85,11 +86,11 @@ class _ProfilePageState extends State<ProfilePage> {
                   labelText: 'البريد الإلكتروني',
                   prefixIcon: const Icon(Icons.email_outlined),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                 ),
               ),
-              const SizedBox(height: 14),
+              SizedBox(height: 14.h),
 
               // حقل الهاتف
               TextField(
@@ -99,21 +100,21 @@ class _ProfilePageState extends State<ProfilePage> {
                   labelText: 'رقم الهاتف',
                   prefixIcon: const Icon(Icons.phone_android),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               // زر التحديث
               SizedBox(
                 width: double.infinity,
-                height: 50,
+                height: 50.h,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryBlue,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(14.r),
                     ),
                   ),
                   onPressed: () {
@@ -145,7 +146,7 @@ class _ProfilePageState extends State<ProfilePage> {
         listener: (context, state) {
           if (state is AuthFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.errorMessage), backgroundColor: Colors.red),
+              SnackBar(content: Text(state.errorMessage), backgroundColor: AppColors.errorColor),
             );
           }
         },
@@ -163,9 +164,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   Text(
                     state.errorMessage,
-                    style: TextStyles.Size15.withColor(Colors.red),
+                    style: TextStyles.Size15.withColor(AppColors.errorColor),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                   ElevatedButton(
                     onPressed: () => context.read<AuthCubit>().fetchProfile(),
                     child: const Text('إعادة المحاولة'),
@@ -182,21 +183,21 @@ class _ProfilePageState extends State<ProfilePage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 GradientHeader(
-                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+                  padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 32.h),
                   child: Column(
                     children: [
                       // أيقونة التعديل العلوية
                       Align(
                         alignment: Alignment.topRight,
                         child: IconButton(
-                          icon: const Icon(Icons.edit, color: AppColors.surfaceWhite),
+                          icon: Icon(Icons.edit, color: AppColors.surfaceWhite, size: 24.r),
                           onPressed: () => _showEditProfileBottomSheet(context, user),
                         ),
                       ),
                       Stack(
                         children: [
                           CircleAvatar(
-                            radius: 46,
+                            radius: 46.r,
                             backgroundColor: AppColors.surfaceWhite.withOpacity(0.15),
                             child: Text(
                               user.name != null && user.name!.isNotEmpty
@@ -209,14 +210,14 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 14),
+                      SizedBox(height: 14.h),
                       Text(
                         user.name ?? '',
                         style: TextStyles.Size24
                             .withColor(AppColors.surfaceWhite)
                             .withWeight(FontWeight.bold),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4.h),
                       Text(
                         user.email ?? '',
                         style: TextStyles.Size15.withColor(
@@ -229,10 +230,24 @@ class _ProfilePageState extends State<ProfilePage> {
                 Expanded(
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+                    padding: EdgeInsets.fromLTRB(20.w, 24.h, 20.w, 20.h),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // 💳 كارت المحفظة والمدفوعات التفاعلي الجديد
+                        _WalletCard(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const WalletScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        SizedBox(height: 24.h),
+
+                        // قسم معلومات الحساب
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -244,25 +259,24 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                             TextButton.icon(
                               onPressed: () => _showEditProfileBottomSheet(context, user),
-                              icon: const Icon(Icons.edit_outlined, size: 18),
+                              icon: Icon(Icons.edit_outlined, size: 18.r),
                               label: const Text('تعديل'),
                             )
                           ],
                         ),
-                        const SizedBox(height: 10),
+                        SizedBox(height: 10.h),
                         _InfoTile(
                           icon: Icons.phone_android_rounded,
                           label: 'رقم الهاتف',
                           value: user.phone ?? 'غير متوفر',
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12.h),
                         _InfoTile(
                           icon: Icons.email_outlined,
                           label: 'البريد الإلكتروني',
                           value: user.email ?? 'غير متوفر',
                         ),
-                        const SizedBox(height: 28),
-                        
+                        SizedBox(height: 28.h),
                       ],
                     ),
                   ),
@@ -273,6 +287,78 @@ class _ProfilePageState extends State<ProfilePage> {
 
           return const SizedBox.shrink();
         },
+      ),
+    );
+  }
+}
+
+/// 💳 كارت المحفظة والمدفوعات الفخم والمخصص
+class _WalletCard extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _WalletCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20.r),
+      child: Container(
+        padding: EdgeInsets.all(18.r),
+        decoration: BoxDecoration(
+          gradient: AppColors.darkCardGradient,
+          borderRadius: BorderRadius.circular(20.r),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.darkBlueBlack.withOpacity(0.2),
+              blurRadius: 16.r,
+              offset: Offset(0, 6.h),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 52.w,
+              height: 52.h,
+              decoration: BoxDecoration(
+                gradient: AppColors.cyanGlowGradient,
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+              child: Icon(
+                Icons.account_balance_wallet_rounded,
+                color: AppColors.surfaceWhite,
+                size: 26.r,
+              ),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'المحفظة والمدفوعات',
+                    style: TextStyles.Size18
+                        .withColor(AppColors.surfaceWhite)
+                        .withWeight(FontWeight.bold),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    'عرض الرصيد الحالي وسجل المدفوعات',
+                    style: TextStyles.Size10.withColor(
+                      AppColors.coolGrey,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: AppColors.cyanAccent,
+              size: 18.r,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -292,30 +378,30 @@ class _InfoTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
         color: AppColors.surfaceWhite,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(18.r),
         boxShadow: [
           BoxShadow(
             color: AppColors.darkBlueBlack.withOpacity(0.05),
-            blurRadius: 14,
-            offset: const Offset(0, 5),
+            blurRadius: 14.r,
+            offset: Offset(0, 5.h),
           ),
         ],
       ),
       child: Row(
         children: [
           Container(
-            width: 46,
-            height: 46,
+            width: 46.w,
+            height: 46.h,
             decoration: BoxDecoration(
               color: AppColors.lightBlueSurface,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(14.r),
             ),
-            child: Icon(icon, color: AppColors.primaryBlue, size: 24),
+            child: Icon(icon, color: AppColors.primaryBlue, size: 24.r),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: 14.w),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -323,7 +409,7 @@ class _InfoTile extends StatelessWidget {
                 label,
                 style: TextStyles.Size10.withColor(AppColors.coolGrey),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4.h),
               Text(
                 value,
                 style: TextStyles.Size15
