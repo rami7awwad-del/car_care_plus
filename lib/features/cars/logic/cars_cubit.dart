@@ -44,7 +44,7 @@ class CarsCubit extends Cubit<CarsState> {
   try {
     final newCar = await _carsRepo.addCar(
       carData: carData,
-      imagePath: imagePath,
+      imageFile: imagePath != null ? File(imagePath) : null,
     );
     
     // إعادة جلب السيارات الحديثة فوراً لتحديث القائمة بنفس كائنات البيانات القادمة من الباك إند
@@ -52,6 +52,7 @@ class CarsCubit extends Cubit<CarsState> {
     
     emit(AddCarSuccessState(newCar));
   } catch (error) {
+    
     emit(CarsErrorState(error.toString()));
   }
 }
@@ -85,7 +86,7 @@ class CarsCubit extends Cubit<CarsState> {
 
     // 5. إرسال قائمة السيارات المحدثة مع مصفوفة جديدة لضمان اعادة بناء الواجهة (Rebuild)
     emit(CarsSuccessState(List.from(cars)));
-
+      getUserCars();
   } catch (error) {
     emit(CarsErrorState(error.toString()));
   }
@@ -102,4 +103,25 @@ class CarsCubit extends Cubit<CarsState> {
       emit(CarsErrorState(error.toString()));
     }
   }
+
+List<Map<String, dynamic>> carBrands = [];
+List<CarTypeModel> carTypes = [];
+
+/// جلب الماركات والأنواع معاً
+Future<void> fetchBrandsAndTypes() async {
+  emit(CarsLoadingState());
+  try {
+    final results = await Future.wait([
+      _carsRepo.getCarBrands(),
+      _carsRepo.getCarTypes(),
+    ]);
+    carBrands = results[0] as List<Map<String, dynamic>>;
+    carTypes = results[1] as List<CarTypeModel>;
+    emit(CarsSuccessState(cars));
+  } catch (error) {
+    emit(CarsErrorState(error.toString()));
+  }
+}
+
+
 }

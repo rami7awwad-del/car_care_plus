@@ -14,6 +14,7 @@ class DioFactory {
       baseUrl: ApiConstants.baseUrl, // استخدام الـ BaseUrl المعرف في ملف الثوابت
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
+      
     );
 
     // إضافة Interceptor لإدراج الـ Token والـ Headers تلقائياً

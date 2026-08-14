@@ -1,5 +1,5 @@
-import 'package:car_care_plus/core/routing/app_routes.dart';
 import 'package:car_care_plus/features/cars/ui/views/add_car_view.dart';
+import 'package:car_care_plus/features/cars/ui/views/edit_car_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -34,9 +34,7 @@ class MyCarsView extends StatelessWidget {
           centerTitle: true,
           actions: [
             IconButton(
-              onPressed: () {
-                // فتح شاشة البحث أو الفلترة إن وجدت
-              },
+              onPressed: () {},
               icon: Icon(
                 Icons.tune_rounded,
                 color: AppColors.darkBlueBlack,
@@ -164,12 +162,15 @@ class MyCarsView extends StatelessWidget {
                                 context.read<CarsCubit>().deleteCar(car.id);
                               },
                               onEdit: () {
-                                // الانتقال لشاشة تعديل البيانات وتمرير كائن السيارة الحالية
-                                Navigator.pushNamed(
+                                final carsCubit = context.read<CarsCubit>();
+                                Navigator.push(
                                   context,
-                                  Routes
-                                      .editCar, // أصلح اسم الـ Route حسب ملف الإشارات لديك
-                                  arguments: car,
+                                  MaterialPageRoute(
+                                    builder: (ctx) => BlocProvider.value(
+                                      value: carsCubit,
+                                      child: EditCarPage(car: car),
+                                    ),
+                                  ),
                                 );
                               },
                             ),

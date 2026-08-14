@@ -32,6 +32,7 @@ class ApiService {
     Map<String, dynamic>? queryParameters,
   }) async {
     try {
+      print('🚀 REQUEST URL: ${_dio.options.baseUrl}$endpoint');
       final response = await _dio.post(
         endpoint,
         data: data,

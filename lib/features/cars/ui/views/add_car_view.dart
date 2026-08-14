@@ -26,12 +26,18 @@ class _AddCarViewState extends State<AddCarView> {
   final TextEditingController _cylindersController = TextEditingController();
 
   String _selectedFuelType = 'petrol';
-  int _selectedBrandId = 1;
-  int _selectedCarTypeId = 1;
-  int _selectedBranchId = 1;
+  int? _selectedBrandId;
+  int? _selectedCarTypeId;
 
   XFile? _selectedImage;
   final ImagePicker _picker = ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+    // جلب البراندات والتايبس فور فتح الشاشة
+    context.read<CarsCubit>().fetchBrandsAndTypes();
+  }
 
   Future<void> _pickImage(ImageSource source) async {
     final XFile? image = await _picker.pickImage(
@@ -140,6 +146,7 @@ class _AddCarViewState extends State<AddCarView> {
           }
         },
         builder: (context, state) {
+          final cubit = context.read<CarsCubit>();
           final isLoading = state is AddCarLoadingState;
 
           return SafeArea(
@@ -217,7 +224,71 @@ class _AddCarViewState extends State<AddCarView> {
                     ),
                     SizedBox(height: 24.h),
 
-                    // 2. الموديل ورقم اللوحة
+                    // 2. قائمة الماركات (Car Brands)
+                    Text(
+                      'ماركة السيارة (Brand)',
+                      style: TextStyles.Size15
+                          .withWeight(FontWeight.bold)
+                          .withColor(AppColors.darkBlueBlack),
+                    ),
+                    SizedBox(height: 8.h),
+                    DropdownButtonFormField<int>(
+                      value: _selectedBrandId,
+                      hint: Text(
+                        'اختر ماركة السيارة',
+                        style: TextStyles.Size15.withColor(AppColors.coolGrey),
+                      ),
+                      decoration: _getInputDecoration(Icons.branding_watermark_outlined),
+                      items: cubit.carBrands.map((brand) {
+                        return DropdownMenuItem<int>(
+                          value: brand['id'] as int,
+                          child: Text(
+                            brand['name']?.toString() ?? '',
+                            style: TextStyles.Size15.withColor(AppColors.darkBlueBlack),
+                          ),
+                        );
+                      }).toList(),
+                      validator: (val) => val == null ? 'يرجى اختيار ماركة السيارة' : null,
+                      onChanged: (val) {
+                        setState(() => _selectedBrandId = val);
+                      },
+                    ),
+                    SizedBox(height: 16.h),
+
+                    // 3. قائمة أنواع السيارات (Car Types)
+                    Text(
+                      'نوع السيارة (Car Type)',
+                      style: TextStyles.Size15
+                          .withWeight(FontWeight.bold)
+                          .withColor(AppColors.darkBlueBlack),
+                    ),
+                    SizedBox(height: 8.h),
+                    DropdownButtonFormField<int>(
+                      value: _selectedCarTypeId,
+                      hint: Text(
+                        'اختر نوع السيارة',
+                        style: TextStyles.Size15.withColor(AppColors.coolGrey),
+                      ),
+                      decoration: _getInputDecoration(Icons.category_outlined),
+                      items: cubit.carTypes.map((type) {
+                        return DropdownMenuItem<int>(
+                          value: type.id as int,
+                          child: Text(
+                            type.nameAr?.toString().isNotEmpty == true
+                                ? type.nameAr.toString()
+                                : type.name.toString(),
+                            style: TextStyles.Size15.withColor(AppColors.darkBlueBlack),
+                          ),
+                        );
+                      }).toList(),
+                      validator: (val) => val == null ? 'يرجى اختيار نوع السيارة' : null,
+                      onChanged: (val) {
+                        setState(() => _selectedCarTypeId = val);
+                      },
+                    ),
+                    SizedBox(height: 16.h),
+
+                    // 4. الموديل ورقم اللوحة
                     _buildTextField(
                       controller: _modelController,
                       label: 'موديل السيارة (مثل: Camry, Land Cruiser)',
@@ -233,7 +304,7 @@ class _AddCarViewState extends State<AddCarView> {
                     ),
                     SizedBox(height: 16.h),
 
-                    // 3. سنة الصنع واللون (في صف واحد)
+                    // 5. سنة الصنع واللون
                     Row(
                       children: [
                         Expanded(
@@ -258,7 +329,7 @@ class _AddCarViewState extends State<AddCarView> {
                     ),
                     SizedBox(height: 16.h),
 
-                    // 4. قراءة العداد والسلندرات
+                    // 6. قراءة العداد والسلندرات
                     Row(
                       children: [
                         Expanded(
@@ -284,7 +355,7 @@ class _AddCarViewState extends State<AddCarView> {
                     ),
                     SizedBox(height: 16.h),
 
-                    // 5. نوع الوقود
+                    // 7. نوع الوقود
                     Text(
                       'نوع الوقود',
                       style: TextStyles.Size15
@@ -307,7 +378,7 @@ class _AddCarViewState extends State<AddCarView> {
                     ),
                     SizedBox(height: 30.h),
 
-                    // 6. زر الحفظ والإضافة
+                    // 8. زر الحفظ والإضافة
                     SizedBox(
                       width: double.infinity,
                       height: 52.h,
@@ -318,16 +389,15 @@ class _AddCarViewState extends State<AddCarView> {
                                 if (_formKey.currentState!.validate()) {
                                   context.read<CarsCubit>().addCar(
                                         carData: {
-                                          'model': _modelController.text,
-                                          'plate_number': _plateController.text,
-                                          'year': _yearController.text,
-                                          'color': _colorController.text,
+                                          'brand_id': _selectedBrandId.toString(),
+                                          'car_type_id': _selectedCarTypeId.toString(),
+                                          'plate_number': _plateController.text.trim(),
+                                          'model': _modelController.text.trim(),
+                                          'year': _yearController.text.trim(),
+                                          'color': _colorController.text.trim(),
                                           'fuel_type': _selectedFuelType,
-                                          'cylinders': _cylindersController.text,
-                                          'mileage': _mileageController.text,
-                                          'brand_id': _selectedBrandId,
-                                          'car_type_id': _selectedCarTypeId,
-                                          'branch_id': _selectedBranchId,
+                                          'cylinders': _cylindersController.text.trim(),
+                                          'mileage': _mileageController.text.trim(),
                                         },
                                         imagePath: _selectedImage?.path,
                                       );

@@ -19,9 +19,22 @@ class ApiConstants {
   static const String profile = 'profile';
   static const String branche = 'branches';      
   // Cars Endpoints
-static const String userCars = 'cars/indexClient'; // جلب سيارات المستخدم
-static const String createCar = 'cars';             // إنشاء/إضافة سيارة جديدة (POST)
-static const String showCar = 'cars/show/';        // عرض تفاصيل سيارة
-static const String updateCar = 'cars/update/';    // تعديل بيانات سيارة
-static const String deleteCar = 'cars/delete/';    // حذف سيارة
+static const String userCars = 'indexClient'; 
+static const String materials = 'materials';
+// Booking Endpoints
+static const String bookingQuote = 'bookings/quote';
+static const String bookingConfirm = 'bookings/confirm';
+  // إضافة سيارة جديدة
+  // إذا كان المسار داخل لارافيل يتبع operations/car/store:
+static const String createCar = ''; 
+
+
+  // عرض تفاصيل سيارة
+  static const String showCar = 'show/'; 
+
+  // تعديل سيارة
+  static const String updateCar = 'update/'; 
+
+  // حذف سيارة
+  static const String deleteCar = 'delete/';
 }
