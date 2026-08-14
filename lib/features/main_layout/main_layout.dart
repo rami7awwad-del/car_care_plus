@@ -2,6 +2,7 @@ import 'package:car_care_plus/features/auth/presentation/profile_page.dart';
 import 'package:car_care_plus/features/cars/ui/views/my_cars_view.dart';
 import 'package:car_care_plus/features/home/ui/views/home_view.dart';
 import 'package:car_care_plus/features/orders/presentation/orders_page.dart';
+import 'package:car_care_plus/features/packages/ui/views/packages_catalog_view.dart';
 import 'package:flutter/material.dart';
 import 'package:car_care_plus/core/resources/app_color.dart';
 import 'package:car_care_plus/core/resources/text_style.dart';
@@ -26,7 +27,7 @@ class _MainLayoutState extends State<MainLayout> {
     ProfilePage(),
     MyCarsView(),
     HomeView(),
-    OrdersPage(),
+    PackagesCatalogView(),
   ];
 
   @override

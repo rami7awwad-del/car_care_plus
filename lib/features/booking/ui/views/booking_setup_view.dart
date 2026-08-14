@@ -6,6 +6,13 @@ import '../../logic/booking_cubit.dart';
 import '../../logic/booking_state.dart';
 import 'package:car_care_plus/core/resources/app_color.dart';
 import 'package:car_care_plus/core/resources/text_style.dart';
+
+import 'package:car_care_plus/features/points/logic/points_cubit.dart';
+import 'package:car_care_plus/features/points/logic/points_state.dart';
+import 'package:car_care_plus/features/packages/logic/packages_cubit.dart';
+import 'package:car_care_plus/features/packages/logic/packages_state.dart';
+import 'package:car_care_plus/features/packages/data/models/package_service_model.dart';
+
 import '../widgets/booking_schedule_picker.dart';
 import '../widgets/booking_summary_bottom_sheet.dart';
 import '../widgets/location_picker_widget.dart';
@@ -31,13 +38,23 @@ class BookingSetupView extends StatefulWidget {
 
 class _BookingSetupViewState extends State<BookingSetupView> {
   bool _bookingType = false;
+  bool _isVip = false; // 👈 خيار VIP اختياري ينقل للبادئة (افتراضياً غير محدد)
   String? _scheduledAt;
   String _paymentMethod = 'cash';
+  int? _selectedUserPackageId;
+  
   final TextEditingController _notesController = TextEditingController();
 
   double _lat = 24.7136;
   double _lng = 46.6753;
   String? _locationAddress;
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<PointsCubit>().fetchUserPoints();
+    context.read<PackagesCubit>().emitGetPackageServices();
+  }
 
   @override
   void dispose() {
@@ -66,11 +83,12 @@ class _BookingSetupViewState extends State<BookingSetupView> {
       serviceId: widget.serviceId,
       bookingType: _bookingType,
       paymentMethod: _paymentMethod,
+      userPackageId: _paymentMethod == 'package' ? _selectedUserPackageId : null,
       scheduledAt: _bookingType ? _scheduledAt : null,
       locationLat: _lat,
       locationLng: _lng,
       locationAddress: _locationAddress,
-      isVip: 1,
+      isVip: _isVip ? 1 : 0, // 👈 إرسال 1 عند اختيار VIP و 0 عند عدم الاختيار
       subServiceIds: widget.subServiceIds,
       materials: widget.materials,
       notes: _notesController.text.isNotEmpty ? _notesController.text : null,
@@ -135,9 +153,56 @@ class _BookingSetupViewState extends State<BookingSetupView> {
                 },
                 onDateTimeSelected: (dateTime) => setState(() => _scheduledAt = dateTime),
               ),
+              SizedBox(height: 16.h),
+
+              // 2. خيار خدمة VIP المميزة (اختياري)
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceWhite,
+                  borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(
+                    color: _isVip ? AppColors.primaryBlue : AppColors.borderGrey,
+                    width: _isVip ? 1.5 : 1.0,
+                  ),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: AppColors.cardShadowColor,
+                      blurRadius: 6,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: SwitchListTile(
+                  value: _isVip,
+                  activeColor: AppColors.primaryBlue,
+                  onChanged: (val) {
+                    setState(() {
+                      _isVip = val;
+                    });
+                  },
+                  title: Row(
+                    children: [
+                      Text(
+                        'خدمة VIP المميزة',
+                        style: TextStyles.Size15.withWeight(FontWeight.bold).withColor(AppColors.darkBlueBlack),
+                      ),
+                      SizedBox(width: 6.w),
+                      Icon(
+                        Icons.workspace_premium,
+                        color: _isVip ? Colors.amber.shade700 : AppColors.coolGrey,
+                        size: 20.r,
+                      ),
+                    ],
+                  ),
+                  subtitle: Text(
+                    'أولوية في التنفيذ وعناية استثنائية بالسيارة',
+                    style: TextStyles.Size10.withColor(AppColors.coolGrey),
+                  ),
+                ),
+              ),
               SizedBox(height: 20.h),
 
-              // 2. تحديد الموقع الجغرافي
+              // 3. تحديد الموقع الجغرافي
               LocationPickerWidget(
                 initialLat: _lat,
                 initialLng: _lng,
@@ -151,14 +216,42 @@ class _BookingSetupViewState extends State<BookingSetupView> {
               ),
               SizedBox(height: 20.h),
 
-              // 3. اختيار طريقة الدفع
-              PaymentMethodSelector(
-                selectedMethod: _paymentMethod,
-                onMethodChanged: (method) => setState(() => _paymentMethod = method),
+              // 4. اختيار طريقة الدفع
+              BlocBuilder<PointsCubit, PointsState>(
+                builder: (context, pointsState) {
+                  final pointsBalance = pointsState is PointsSuccessState ? (pointsState.pointsData.balance ?? 0) : 0;
+
+                  return BlocBuilder<PackagesCubit, PackagesState>(
+                    builder: (context, packagesState) {
+                      List<PackageServiceModel> activePackages = [];
+                      if (packagesState is PackageServicesSuccess) {
+                        activePackages = packagesState.packageServices
+                            .where((item) => item.package.isActive == true)
+                            .toList();
+
+                        if (activePackages.isNotEmpty && _selectedUserPackageId == null) {
+                          _selectedUserPackageId = activePackages.first.package.id;
+                        }
+                      }
+
+                      return PaymentMethodSelector(
+                        selectedMethod: _paymentMethod,
+                        pointsBalance: pointsBalance,
+                        hasActivePackage: activePackages.isNotEmpty,
+                        activePackageName: activePackages.isNotEmpty ? activePackages.first.package.name : null,
+                        onMethodChanged: (method) {
+                          setState(() {
+                            _paymentMethod = method;
+                          });
+                        },
+                      );
+                    },
+                  );
+                },
               ),
               SizedBox(height: 20.h),
 
-              // 4. ملاحظات إضافية
+              // 5. ملاحظات إضافية
               Text(
                 'ملاحظات إضافية',
                 style: TextStyles.Size18.withWeight(FontWeight.bold).withColor(AppColors.darkBlueBlack),
@@ -201,7 +294,7 @@ class _BookingSetupViewState extends State<BookingSetupView> {
               ),
               SizedBox(height: 32.h),
 
-              // 5. زر حساب التكلفة
+              // 6. زر حساب التكلفة
               BlocBuilder<BookingCubit, BookingState>(
                 builder: (context, state) {
                   final isLoading = state is BookingQuoteLoadingState;

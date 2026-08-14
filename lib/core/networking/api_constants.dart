@@ -18,7 +18,7 @@ class ApiConstants {
   static const String points = 'points';
   static const String profile = 'profile';
   static const String branche = 'branches';
-
+static const String showPoints = 'points/show';
   // Wallet & Payments Endpoints
   static const String myWallet = 'wallets/my';
   static const String payments = 'payments';

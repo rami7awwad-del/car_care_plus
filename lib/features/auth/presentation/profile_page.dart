@@ -1,12 +1,14 @@
+import 'package:car_care_plus/core/widgets/gradient_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:car_care_plus/core/resources/app_color.dart';
 import 'package:car_care_plus/core/resources/text_style.dart';
-import 'package:car_care_plus/core/widgets/gradient_header.dart';
 import 'package:car_care_plus/features/auth/data/user_model.dart';
 import 'package:car_care_plus/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:car_care_plus/features/auth/presentation/cubit/auth_state.dart';
+import 'package:car_care_plus/features/points/logic/points_cubit.dart';
+import 'package:car_care_plus/features/points/logic/points_state.dart';
 import 'package:car_care_plus/features/wallet_and_payments/ui/screens/wallet_screen.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -20,8 +22,9 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    // 🚀 جلب بيانات البروفايل عند التنزيل
+    // 🚀 جلب بيانات البروفايل والنقاط عند التنزيل
     context.read<AuthCubit>().fetchProfile();
+    context.read<PointsCubit>().fetchUserPoints();
   }
 
   // 📝 دالة إظهار نافذة التعديل السفلية
@@ -234,7 +237,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // 💳 كارت المحفظة والمدفوعات التفاعلي الجديد
+                        // 💳 كارت المحفظة والمدفوعات التفاعلي
                         _WalletCard(
                           onTap: () {
                             Navigator.push(
@@ -245,6 +248,10 @@ class _ProfilePageState extends State<ProfilePage> {
                             );
                           },
                         ),
+                        SizedBox(height: 14.h),
+
+                        // ⭐ كارت النقاط الجديد
+                        const _PointsCard(),
                         SizedBox(height: 24.h),
 
                         // قسم معلومات الحساب
@@ -292,7 +299,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 }
 
-/// 💳 كارت المحفظة والمدفوعات الفخم والمخصص
+/// 💳 كارت المحفظة والمدفوعات
 class _WalletCard extends StatelessWidget {
   final VoidCallback onTap;
 
@@ -359,6 +366,107 @@ class _WalletCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// ⭐ كارت رصيد النقاط المخصص
+class _PointsCard extends StatelessWidget {
+  const _PointsCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(18.r),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF232526), Color(0xFF414345)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.darkBlueBlack.withOpacity(0.15),
+            blurRadius: 16.r,
+            offset: Offset(0, 6.h),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 52.w,
+            height: 52.h,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Colors.amber, Colors.orangeAccent],
+              ),
+              borderRadius: BorderRadius.circular(16.r),
+            ),
+            child: Icon(
+              Icons.stars_rounded,
+              color: AppColors.surfaceWhite,
+              size: 28.r,
+            ),
+          ),
+          SizedBox(width: 16.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'نقاط المكافآت',
+                  style: TextStyles.Size18
+                      .withColor(AppColors.surfaceWhite)
+                      .withWeight(FontWeight.bold),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  'استبدل نقاطك بخصومات على الحجوزات',
+                  style: TextStyles.Size10.withColor(
+                    AppColors.coolGrey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          BlocBuilder<PointsCubit, PointsState>(
+            builder: (context, state) {
+              if (state is PointsLoadingState) {
+                return SizedBox(
+                  width: 18.w,
+                  height: 18.h,
+                  child: const CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.amber,
+                  ),
+                );
+              }
+
+              int balance = 0;
+              if (state is PointsSuccessState) {
+                balance = state.pointsData.balance ?? 0;
+              }
+
+              return Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                decoration: BoxDecoration(
+                  color: Colors.amber.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(color: Colors.amber.withOpacity(0.4)),
+                ),
+                child: Text(
+                  '$balance نقطة',
+                  style: TextStyles.Size10
+                      .withColor(Colors.amber)
+                      .withWeight(FontWeight.bold),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
