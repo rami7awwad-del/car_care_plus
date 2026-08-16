@@ -20,15 +20,21 @@ class UserModel {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
-    // يستخرج الكائن الداخلي من داخل data
     final userData = json['data'] ?? json;
+
+    bool parseIsActive(dynamic value) {
+      if (value is bool) return value;
+      if (value is int) return value == 1;
+      return false;
+    }
+
     return UserModel(
       id: userData['id'] ?? 0,
       name: userData['name'] ?? '',
       email: userData['email'] ?? '',
       phone: userData['phone'] ?? '',
       imageUrl: userData['image_url'],
-      isActive: userData['is_active'] ?? false,
+      isActive: parseIsActive(userData['is_active']),
       role: userData['role'] ?? '',
       token: userData['token'],
     );

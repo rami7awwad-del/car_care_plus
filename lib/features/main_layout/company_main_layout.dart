@@ -1,33 +1,34 @@
-import 'package:car_care_plus/features/auth/presentation/profile_page.dart';
+import 'package:car_care_plus/core/resources/app_color.dart';
+import 'package:car_care_plus/core/resources/text_style.dart';
+import 'package:car_care_plus/features/auth/presentation/companyProfilePage.dart';
 import 'package:car_care_plus/features/cars/ui/views/my_cars_view.dart';
 import 'package:car_care_plus/features/home/ui/views/home_view.dart';
 import 'package:car_care_plus/features/packages/ui/views/packages_catalog_view.dart';
 import 'package:flutter/material.dart';
-import 'package:car_care_plus/core/resources/app_color.dart';
-import 'package:car_care_plus/core/resources/text_style.dart';
 
-class MainLayout extends StatefulWidget {
-  const MainLayout({super.key});
+class CompanyMainLayout extends StatefulWidget {
+  const CompanyMainLayout({super.key});
 
   @override
-  State<MainLayout> createState() => _MainLayoutState();
+  State<CompanyMainLayout> createState() => _CompanyMainLayoutState();
 }
 
-class _MainLayoutState extends State<MainLayout> {
-  // نبدأ افتراضياً على الواجهة الرئيسية (Index 2)
+class _CompanyMainLayoutState extends State<CompanyMainLayout> {
   int _currentIndex = 2;
 
-  // الترتيب من اليمين لليسار (RTL):
-  // 0: حسابي (البروفايل)
-  // 1: الكراج (سياراتي)
-  // 2: الرئيسية
-  // 3: طلباتي
-  final List<Widget> _pages = const [
-    ProfilePage(),
-    MyCarsView(),
-    HomeView(),
-    PackagesCatalogView(),
-  ];
+  // القائمة الخاصة بالشركة (تشترك في الهوم والطلبات وتختلف في البروفايل)
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      const CompanyProfilePage(), // 👈 شاشة البروفايل الخاصة بالشركة
+      const MyCarsView(),
+      const HomeView(), // 👈 نفس الهوم المشترك
+      const PackagesCatalogView(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,14 +62,14 @@ class _MainLayoutState extends State<MainLayout> {
           unselectedLabelStyle: TextStyles.Size10,
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline_rounded),
-              activeIcon: Icon(Icons.person_rounded),
-              label: 'حسابي',
+              icon: Icon(Icons.business_outlined),
+              activeIcon: Icon(Icons.business_rounded),
+              label: 'حساب الشركة',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.directions_car_outlined),
               activeIcon: Icon(Icons.directions_car_filled_rounded),
-              label: 'الكراج',
+              label: 'الأسطول',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.home_outlined),
@@ -78,7 +79,7 @@ class _MainLayoutState extends State<MainLayout> {
             BottomNavigationBarItem(
               icon: Icon(Icons.receipt_long_outlined),
               activeIcon: Icon(Icons.receipt_long_rounded),
-              label: 'طلباتي',
+              label: 'طلبات الشركة',
             ),
           ],
         ),

@@ -46,7 +46,8 @@ class PaymentItemModel {
   final String status;
   final String amount;
   final int pointsUsed;
-  final String? createdAt; // 👈 تم إضافة حقل التاريخ
+  final int? orderId;
+  final OrderModel? order;
 
   PaymentItemModel({
     required this.id,
@@ -56,7 +57,8 @@ class PaymentItemModel {
     required this.status,
     required this.amount,
     required this.pointsUsed,
-    this.createdAt,
+    this.orderId,
+    this.order,
   });
 
   factory PaymentItemModel.fromJson(Map<String, dynamic> json) {
@@ -68,7 +70,34 @@ class PaymentItemModel {
       status: json['status'] ?? '',
       amount: json['amount']?.toString() ?? '0.00',
       pointsUsed: json['points_used'] ?? 0,
-      createdAt: json['created_at'] ?? json['date'], // 👈 جلب التاريخ
+      orderId: json['order_id'],
+      order: json['order'] != null ? OrderModel.fromJson(json['order']) : null,
+    );
+  }
+}
+
+class OrderModel {
+  final int id;
+  final String status;
+  final String? scheduledAt;
+  final String? createdAt;
+  final String totalPrice;
+
+  OrderModel({
+    required this.id,
+    required this.status,
+    this.scheduledAt,
+    this.createdAt,
+    required this.totalPrice,
+  });
+
+  factory OrderModel.fromJson(Map<String, dynamic> json) {
+    return OrderModel(
+      id: json['id'] ?? 0,
+      status: json['status'] ?? '',
+      scheduledAt: json['scheduled_at'],
+      createdAt: json['created_at'],
+      totalPrice: json['total_price']?.toString() ?? '0.00',
     );
   }
 }

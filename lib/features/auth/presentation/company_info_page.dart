@@ -1,12 +1,12 @@
 import 'package:car_care_plus/core/resources/app_color.dart';
 import 'package:car_care_plus/core/resources/text_style.dart';
+import 'package:car_care_plus/core/routing/app_routes.dart';
 import 'package:car_care_plus/core/validatiors/app_validators.dart';
 import 'package:car_care_plus/core/widgets/customTextField.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:car_care_plus/core/routing/app_routes.dart';
 import 'package:car_care_plus/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:car_care_plus/features/auth/presentation/cubit/auth_state.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CompanyInfoPage extends StatefulWidget {
   // البيانات المشتركة القادمة من صفحة إنشاء الحساب
@@ -176,13 +176,15 @@ class _CompanyInfoPageState extends State<CompanyInfoPage> {
                       if (state is AuthSuccess) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('تم إنشاء حساب الشركة بنجاح!'),
+                            content: Text('تم إنشاء حساب الشركة بنجاح! طلبك قيد المراجعة.'),
                             backgroundColor: AppColors.primaryBlue,
                           ),
                         );
+                        
+                        // 👈 التوجيه المباشر إلى شاشة انتظار موافقة الإدارة
                         Navigator.pushNamedAndRemoveUntil(
                           context,
-                          Routes.mainLayout,
+                          Routes.pendingApproval,
                           (route) => false,
                         );
                       } else if (state is AuthFailure) {

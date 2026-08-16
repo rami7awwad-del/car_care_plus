@@ -1,12 +1,12 @@
 import 'package:car_care_plus/core/resources/app_color.dart';
 import 'package:car_care_plus/core/resources/text_style.dart';
+import 'package:car_care_plus/core/routing/app_routes.dart';
 import 'package:car_care_plus/core/validatiors/app_validators.dart';
 import 'package:car_care_plus/core/widgets/customTextField.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:car_care_plus/core/routing/app_routes.dart';
 import 'package:car_care_plus/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:car_care_plus/features/auth/presentation/cubit/auth_state.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -164,19 +164,41 @@ class _LoginPageState extends State<LoginPage> {
                     BlocConsumer<AuthCubit, AuthState>(
                       listener: (context, state) {
                         if (state is AuthSuccess) {
+                          final user = state.user;
+
+                          // 1. التحقق أولاً من حالة تفعيل الحساب
+                          if (!user.isActive) {
+                            Navigator.pushNamedAndRemoveUntil(
+                              context,
+                              Routes.pendingApproval,
+                              (route) => false,
+                            );
+                            return;
+                          }
+
+                          // 2. إذا كان الحساب مفعلاً، يتم التوجيه بناءً على الـ Role
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                'تم تسجيل الدخول بنجاح! مرحباً ${state.user.name}',
+                                'تم تسجيل الدخول بنجاح! مرحباً ${user.name}',
                               ),
                               backgroundColor: AppColors.primaryBlue,
                             ),
                           );
-                          Navigator.pushNamedAndRemoveUntil(
-                            context,
-                            Routes.mainLayout,
-                            (route) => false,
-                          );
+
+                          if (user.role == 'customer_company') {
+                            Navigator.pushNamedAndRemoveUntil(
+                              context,
+                              Routes.companyMainLayout,
+                              (route) => false,
+                            );
+                          } else {
+                            Navigator.pushNamedAndRemoveUntil(
+                              context,
+                              Routes.mainLayout,
+                              (route) => false,
+                            );
+                          }
                         } else if (state is AuthFailure) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(

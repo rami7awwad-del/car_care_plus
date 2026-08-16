@@ -272,9 +272,9 @@ class _AddCarViewState extends State<AddCarView> {
                       decoration: _getInputDecoration(Icons.category_outlined),
                       items: cubit.carTypes.map((type) {
                         return DropdownMenuItem<int>(
-                          value: type.id as int,
+                          value: type.id,
                           child: Text(
-                            type.nameAr?.toString().isNotEmpty == true
+                            type.nameAr.toString().isNotEmpty == true
                                 ? type.nameAr.toString()
                                 : type.name.toString(),
                             style: TextStyles.Size15.withColor(AppColors.darkBlueBlack),

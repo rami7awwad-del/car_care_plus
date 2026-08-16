@@ -12,18 +12,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+class CompanyProfilePage extends StatefulWidget {
+  const CompanyProfilePage({super.key});
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
+  State<CompanyProfilePage> createState() => _CompanyProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _CompanyProfilePageState extends State<CompanyProfilePage> {
   @override
   void initState() {
     super.initState();
-    // جلب بيانات البروفايل والنقاط عند التنزيل
+    // جلب بيانات البروفايل والنقاط للشركة عند فتح الشاشة
     context.read<AuthCubit>().fetchProfile();
     context.read<PointsCubit>().fetchUserPoints();
   }
@@ -55,8 +55,8 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // دالة إظهار نافذة التعديل السفلية
-  void _showEditProfileBottomSheet(BuildContext context, UserModel user) {
+  // دالة إظهار نافذة تعديل ملف الشركة
+  void _showEditCompanyBottomSheet(BuildContext context, UserModel user) {
     final nameController = TextEditingController(text: user.name);
     final emailController = TextEditingController(text: user.email);
     final phoneController = TextEditingController(text: user.phone);
@@ -84,10 +84,10 @@ class _ProfilePageState extends State<ProfilePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'تعديل الملف الشخصي',
-                    style: TextStyles.Size18
-                        .withColor(AppColors.darkBlueBlack)
-                        .withWeight(FontWeight.bold),
+                    'تعديل ملف الشركة',
+                    style: TextStyles.Size18.withColor(
+                      AppColors.darkBlueBlack,
+                    ).withWeight(FontWeight.bold),
                   ),
                   IconButton(
                     icon: Icon(Icons.close, size: 24.r),
@@ -99,7 +99,7 @@ class _ProfilePageState extends State<ProfilePage> {
               TextField(
                 controller: nameController,
                 decoration: InputDecoration(
-                  labelText: 'الاسم الكامل',
+                  labelText: 'اسم الممثل المسؤول',
                   prefixIcon: const Icon(Icons.person_outline),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.r),
@@ -122,7 +122,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 controller: phoneController,
                 keyboardType: TextInputType.phone,
                 decoration: InputDecoration(
-                  labelText: 'رقم الهاتف',
+                  labelText: 'رقم التواصل',
                   prefixIcon: const Icon(Icons.phone_android),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.r),
@@ -143,10 +143,10 @@ class _ProfilePageState extends State<ProfilePage> {
                   onPressed: () {
                     Navigator.pop(bottomSheetContext);
                     context.read<AuthCubit>().updateProfile(
-                          name: nameController.text.trim(),
-                          email: emailController.text.trim(),
-                          phone: phoneController.text.trim(),
-                        );
+                      name: nameController.text.trim(),
+                      email: emailController.text.trim(),
+                      phone: phoneController.text.trim(),
+                    );
                   },
                   child: Text(
                     'حفظ التعديلات',
@@ -175,7 +175,6 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             );
           } else if (state is AuthInitial) {
-            // توجيه المستخدم لشاشة تسجيل الدخول ومسح السجل السابق عند النجاح
             Navigator.pushNamedAndRemoveUntil(
               context,
               Routes.login,
@@ -215,6 +214,7 @@ class _ProfilePageState extends State<ProfilePage> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // هيدر البروفايل متضمناً آيقونة وتفاصيل الشركة
                 GradientHeader(
                   padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 32.h),
                   child: Column(
@@ -222,32 +222,32 @@ class _ProfilePageState extends State<ProfilePage> {
                       Align(
                         alignment: Alignment.topRight,
                         child: IconButton(
-                          icon: Icon(Icons.edit, color: AppColors.surfaceWhite, size: 24.r),
-                          onPressed: () => _showEditProfileBottomSheet(context, user),
+                          icon: Icon(
+                            Icons.edit,
+                            color: AppColors.surfaceWhite,
+                            size: 24.r,
+                          ),
+                          onPressed: () =>
+                              _showEditCompanyBottomSheet(context, user),
                         ),
                       ),
-                      Stack(
-                        children: [
-                          CircleAvatar(
-                            radius: 46.r,
-                            backgroundColor: AppColors.surfaceWhite.withOpacity(0.15),
-                            child: Text(
-                            user.name.isNotEmpty
-                                ? user.name.characters.first.toUpperCase()
-                                  : 'U',
-                              style: TextStyles.Size32
-                                  .withColor(AppColors.surfaceWhite)
-                                  .withWeight(FontWeight.bold),
-                            ),
-                          ),
-                        ],
+                      CircleAvatar(
+                        radius: 46.r,
+                        backgroundColor: AppColors.surfaceWhite.withOpacity(
+                          0.15,
+                        ),
+                        child: Icon(
+                          Icons.business_rounded,
+                          size: 48.r,
+                          color: AppColors.surfaceWhite,
+                        ),
                       ),
                       SizedBox(height: 14.h),
                       Text(
-                        user.name,
-                        style: TextStyles.Size24
-                            .withColor(AppColors.surfaceWhite)
-                            .withWeight(FontWeight.bold),
+                        user.name.isNotEmpty ? user.name : 'حساب شركة',
+                        style: TextStyles.Size24.withColor(
+                          AppColors.surfaceWhite,
+                        ).withWeight(FontWeight.bold),
                       ),
                       SizedBox(height: 4.h),
                       Text(
@@ -266,6 +266,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // بطاقة كشف محفظة الشركة والمدفوعات
                         _WalletCard(
                           onTap: () {
                             Navigator.push(
@@ -277,35 +278,53 @@ class _ProfilePageState extends State<ProfilePage> {
                           },
                         ),
                         SizedBox(height: 14.h),
+
+                        // بطاقة نقاط المكافآت
                         const _PointsCard(),
                         SizedBox(height: 24.h),
+
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'معلومات الحساب',
-                              style: TextStyles.Size18
-                                  .withColor(AppColors.darkBlueBlack)
-                                  .withWeight(FontWeight.bold),
+                              'معلومات الشركة',
+                              style: TextStyles.Size18.withColor(
+                                AppColors.darkBlueBlack,
+                              ).withWeight(FontWeight.bold),
                             ),
                             TextButton.icon(
-                              onPressed: () => _showEditProfileBottomSheet(context, user),
+                              onPressed: () =>
+                                  _showEditCompanyBottomSheet(context, user),
                               icon: Icon(Icons.edit_outlined, size: 18.r),
                               label: const Text('تعديل'),
-                            )
+                            ),
                           ],
                         ),
                         SizedBox(height: 10.h),
-                        _InfoTile(
-                          icon: Icons.phone_android_rounded,
-                          label: 'رقم الهاتف',
-                          value: user.phone,
+
+                        // عناصر تفاصيل الشركة
+                        _CompanyInfoTile(
+                          icon: Icons.person_outline_rounded,
+                          label: 'مسؤول الحساب',
+                          value: user.name.isNotEmpty ? user.name : 'غير متوفر',
                         ),
                         SizedBox(height: 12.h),
-                        _InfoTile(
+                        _CompanyInfoTile(
+                          icon: Icons.phone_android_rounded,
+                          label: 'رقم الهاتف',
+                          value: user.phone.isNotEmpty ? user.phone : 'غير متوفر',
+                        ),
+                        SizedBox(height: 12.h),
+                        _CompanyInfoTile(
                           icon: Icons.email_outlined,
                           label: 'البريد الإلكتروني',
-                          value: user.email,
+                          value: user.email.isNotEmpty ? user.email : 'غير متوفر',
+                        ),
+                        SizedBox(height: 12.h),
+                        _CompanyInfoTile(
+                          icon: Icons.verified_user_outlined,
+                          label: 'نوع الحساب',
+                          value: 'حساب شركة (Enterprise)',
                         ),
                         SizedBox(height: 20.h),
 
@@ -318,7 +337,9 @@ class _ProfilePageState extends State<ProfilePage> {
                             decoration: BoxDecoration(
                               color: Colors.red.withOpacity(0.08),
                               borderRadius: BorderRadius.circular(18.r),
-                              border: Border.all(color: Colors.red.withOpacity(0.2)),
+                              border: Border.all(
+                                color: Colors.red.withOpacity(0.2),
+                              ),
                             ),
                             child: Row(
                               children: [
@@ -329,14 +350,18 @@ class _ProfilePageState extends State<ProfilePage> {
                                     color: Colors.red.withOpacity(0.15),
                                     borderRadius: BorderRadius.circular(14.r),
                                   ),
-                                  child: Icon(Icons.logout_rounded, color: Colors.red, size: 24.r),
+                                  child: Icon(
+                                    Icons.logout_rounded,
+                                    color: Colors.red,
+                                    size: 24.r,
+                                  ),
                                 ),
                                 SizedBox(width: 14.w),
                                 Text(
                                   'تسجيل الخروج',
-                                  style: TextStyles.Size15
-                                      .withColor(Colors.red)
-                                      .withWeight(FontWeight.bold),
+                                  style: TextStyles.Size15.withColor(
+                                    Colors.red,
+                                  ).withWeight(FontWeight.bold),
                                 ),
                               ],
                             ),
@@ -402,17 +427,15 @@ class _WalletCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'المحفظة والمدفوعات',
-                    style: TextStyles.Size18
-                        .withColor(AppColors.surfaceWhite)
-                        .withWeight(FontWeight.bold),
+                    'محفظة الشركة',
+                    style: TextStyles.Size18.withColor(
+                      AppColors.surfaceWhite,
+                    ).withWeight(FontWeight.bold),
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    'عرض الرصيد الحالي وسجل المدفوعات',
-                    style: TextStyles.Size10.withColor(
-                      AppColors.coolGrey,
-                    ),
+                    'عرض الرصيد المالي وفواتير الخدمة',
+                    style: TextStyles.Size10.withColor(AppColors.coolGrey),
                   ),
                 ],
               ),
@@ -475,16 +498,14 @@ class _PointsCard extends StatelessWidget {
               children: [
                 Text(
                   'نقاط المكافآت',
-                  style: TextStyles.Size18
-                      .withColor(AppColors.surfaceWhite)
-                      .withWeight(FontWeight.bold),
+                  style: TextStyles.Size18.withColor(
+                    AppColors.surfaceWhite,
+                  ).withWeight(FontWeight.bold),
                 ),
                 SizedBox(height: 4.h),
                 Text(
                   'استبدل نقاطك بخصومات على الحجوزات',
-                  style: TextStyles.Size10.withColor(
-                    AppColors.coolGrey,
-                  ),
+                  style: TextStyles.Size10.withColor(AppColors.coolGrey),
                 ),
               ],
             ),
@@ -516,9 +537,9 @@ class _PointsCard extends StatelessWidget {
                 ),
                 child: Text(
                   '$balance نقطة',
-                  style: TextStyles.Size10
-                      .withColor(Colors.amber)
-                      .withWeight(FontWeight.bold),
+                  style: TextStyles.Size10.withColor(
+                    Colors.amber,
+                  ).withWeight(FontWeight.bold),
                 ),
               );
             },
@@ -529,12 +550,12 @@ class _PointsCard extends StatelessWidget {
   }
 }
 
-class _InfoTile extends StatelessWidget {
+class _CompanyInfoTile extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
 
-  const _InfoTile({
+  const _CompanyInfoTile({
     required this.icon,
     required this.label,
     required this.value,
@@ -577,9 +598,9 @@ class _InfoTile extends StatelessWidget {
               SizedBox(height: 4.h),
               Text(
                 value,
-                style: TextStyles.Size15
-                    .withColor(AppColors.darkBlueBlack)
-                    .withWeight(FontWeight.w600),
+                style: TextStyles.Size15.withColor(
+                  AppColors.darkBlueBlack,
+                ).withWeight(FontWeight.w600),
               ),
             ],
           ),

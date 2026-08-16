@@ -11,7 +11,6 @@ import 'package:car_care_plus/features/points/logic/points_cubit.dart';
 import 'package:car_care_plus/features/points/logic/points_state.dart';
 import 'package:car_care_plus/features/packages/logic/packages_cubit.dart';
 import 'package:car_care_plus/features/packages/logic/packages_state.dart';
-import 'package:car_care_plus/features/packages/data/models/package_service_model.dart';
 
 import '../widgets/booking_schedule_picker.dart';
 import '../widgets/booking_summary_bottom_sheet.dart';
@@ -45,15 +44,15 @@ class _BookingSetupViewState extends State<BookingSetupView> {
   
   final TextEditingController _notesController = TextEditingController();
 
-  double _lat = 24.7136;
-  double _lng = 46.6753;
+  double _lat = 10;
+  double _lng = 10;
   String? _locationAddress;
 
   @override
   void initState() {
     super.initState();
     context.read<PointsCubit>().fetchUserPoints();
-    context.read<PackagesCubit>().emitGetPackageServices();
+    context.read<PackagesCubit>().emitFetchPackagesData();
   }
 
   @override
@@ -218,37 +217,49 @@ class _BookingSetupViewState extends State<BookingSetupView> {
 
               // 4. اختيار طريقة الدفع
               BlocBuilder<PointsCubit, PointsState>(
-                builder: (context, pointsState) {
-                  final pointsBalance = pointsState is PointsSuccessState ? (pointsState.pointsData.balance ?? 0) : 0;
+  builder: (context, pointsState) {
+    final pointsBalance = pointsState is PointsSuccessState
+        ? (pointsState.pointsData.balance ?? 0)
+        : 0;
 
-                  return BlocBuilder<PackagesCubit, PackagesState>(
-                    builder: (context, packagesState) {
-                      List<PackageServiceModel> activePackages = [];
-                      if (packagesState is PackageServicesSuccess) {
-                        activePackages = packagesState.packageServices
-                            .where((item) => item.package.isActive == true)
-                            .toList();
+    return BlocBuilder<PackagesCubit, PackagesState>(
+      builder: (context, packagesState) {
+        bool hasActivePackage = false;
+        String? activePackageName;
 
-                        if (activePackages.isNotEmpty && _selectedUserPackageId == null) {
-                          _selectedUserPackageId = activePackages.first.package.id;
-                        }
-                      }
+        if (packagesState is PackagesLoadedSuccess) {
+          final activeUserPackage = packagesState.activeUserPackage;
 
-                      return PaymentMethodSelector(
-                        selectedMethod: _paymentMethod,
-                        pointsBalance: pointsBalance,
-                        hasActivePackage: activePackages.isNotEmpty,
-                        activePackageName: activePackages.isNotEmpty ? activePackages.first.package.name : null,
-                        onMethodChanged: (method) {
-                          setState(() {
-                            _paymentMethod = method;
-                          });
-                        },
-                      );
-                    },
-                  );
-                },
-              ),
+          if (activeUserPackage != null) {
+            hasActivePackage = true;
+            activePackageName = activeUserPackage.packageDetails?.name;
+
+            // ضبط المعرف المختار تلقائياً للباقة المفعلة
+            if (_selectedUserPackageId == null) {
+              _selectedUserPackageId = activeUserPackage.packageDetails?.id;
+            }
+          }
+        }
+
+        return PaymentMethodSelector(
+          selectedMethod: _paymentMethod,
+          pointsBalance: pointsBalance,
+          hasActivePackage: hasActivePackage,
+          activePackageName: activePackageName,
+          onMethodChanged: (method) {
+            setState(() {
+              _paymentMethod = method;
+            });
+          },
+        );
+      },
+    );
+  },
+),
+
+
+
+
               SizedBox(height: 20.h),
 
               // 5. ملاحظات إضافية
