@@ -5,6 +5,7 @@ import 'package:car_care_plus/core/widgets/gradient_header.dart';
 import 'package:car_care_plus/features/auth/data/user_model.dart';
 import 'package:car_care_plus/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:car_care_plus/features/auth/presentation/cubit/auth_state.dart';
+import 'package:car_care_plus/features/orders/presentation/orders_page.dart';
 import 'package:car_care_plus/features/points/logic/points_cubit.dart';
 import 'package:car_care_plus/features/points/logic/points_state.dart';
 import 'package:car_care_plus/features/wallet_and_payments/ui/screens/wallet_screen.dart';
@@ -306,6 +307,62 @@ class _ProfilePageState extends State<ProfilePage> {
                           icon: Icons.email_outlined,
                           label: 'البريد الإلكتروني',
                           value: user.email,
+                        ),
+                        SizedBox(height: 12.h),
+
+                        // مدخل الطلبات والتقييمات
+                        InkWell(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const OrdersPage(),
+                            ),
+                          ),
+                          borderRadius: BorderRadius.circular(18.r),
+                          child: Container(
+                            padding: EdgeInsets.all(16.r),
+                            decoration: BoxDecoration(
+                              color: AppColors.surfaceWhite,
+                              borderRadius: BorderRadius.circular(18.r),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.darkBlueBlack.withOpacity(0.05),
+                                  blurRadius: 14.r,
+                                  offset: Offset(0, 5.h),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 46.w,
+                                  height: 46.h,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.lightBlueSurface,
+                                    borderRadius: BorderRadius.circular(14.r),
+                                  ),
+                                  child: Icon(
+                                    Icons.receipt_long_rounded,
+                                    color: AppColors.primaryBlue,
+                                    size: 24.r,
+                                  ),
+                                ),
+                                SizedBox(width: 14.w),
+                                Text(
+                                  'الطلبات والتقييمات',
+                                  style: TextStyles.Size15
+                                      .withColor(AppColors.darkBlueBlack)
+                                      .withWeight(FontWeight.w600),
+                                ),
+                                const Spacer(),
+                                Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  size: 16.r,
+                                  color: AppColors.coolGrey,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                         SizedBox(height: 20.h),
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:car_care_plus/core/resources/app_color.dart';
 import 'package:car_care_plus/core/resources/text_style.dart';
 import 'package:car_care_plus/features/orders/data/order_model.dart';
+import 'package:car_care_plus/features/rating/ui/views/create_rating_view.dart';
 
 // بطاقة طلب واحد داخل سجل الطلبات
 class OrderCard extends StatelessWidget {
@@ -85,6 +86,45 @@ class OrderCard extends StatelessWidget {
               ),
             ],
           ),
+
+          // زر التقييم يظهر فقط للطلبات المكتملة
+          if (order.status == OrderStatus.completed) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  final orderId =
+                      int.tryParse(order.id.replaceAll(RegExp(r'[^0-9]'), '')) ??
+                          0;
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => CreateRatingView(orderId: orderId),
+                    ),
+                  );
+                },
+                icon: const Icon(
+                  Icons.star_rounded,
+                  color: AppColors.goldAccent,
+                  size: 18,
+                ),
+                label: Text(
+                  'قيّم الخدمة',
+                  style: TextStyles.Size15
+                      .withColor(AppColors.primaryBlue)
+                      .withWeight(FontWeight.bold),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: AppColors.primaryBlue),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
