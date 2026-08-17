@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../data/models/booking_quote_request_body.dart';
+import '../../data/models/booking_quote_response_model.dart';
 import '../../logic/booking_cubit.dart';
 import '../../logic/booking_state.dart';
 import 'package:car_care_plus/core/resources/app_color.dart';
@@ -15,6 +16,7 @@ import 'package:car_care_plus/features/packages/logic/packages_state.dart';
 import '../widgets/booking_schedule_picker.dart';
 import '../widgets/booking_summary_bottom_sheet.dart';
 import '../widgets/location_picker_widget.dart';
+import '../widgets/package_selection_bottom_sheet.dart';
 import '../widgets/payment_method_selector.dart';
 
 class BookingSetupView extends StatefulWidget {
@@ -114,6 +116,37 @@ class _BookingSetupViewState extends State<BookingSetupView> {
     context.read<BookingCubit>().emitBookingQuote(requestBody);
   }
 
+  void _showSummary(BuildContext context, QuoteData data) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => BlocProvider.value(
+        value: context.read<BookingCubit>(),
+        child: BookingSummaryBottomSheet(quoteData: data),
+      ),
+    );
+  }
+
+  void _showPackageSelection(
+    BuildContext context,
+    List<AvailablePackage> packages,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => PackageSelectionBottomSheet(
+        packages: packages,
+        onSelect: (id) {
+          Navigator.pop(sheetContext);
+          setState(() => _selectedUserPackageId = id);
+          _getQuote(); // إعادة التسعير بالباقة المختارة
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -139,17 +172,13 @@ class _BookingSetupViewState extends State<BookingSetupView> {
               ),
             );
           } else if (state is BookingQuoteSuccessState) {
-            showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              backgroundColor: Colors.transparent,
-              builder: (_) => BlocProvider.value(
-                value: context.read<BookingCubit>(),
-                child: BookingSummaryBottomSheet(
-                  quoteData: state.quoteResponse.data!,
-                ),
-              ),
-            );
+            final data = state.quoteResponse.data!;
+            // الدفع بالباقة دون اختيارها: اعرض قائمة الباقات ثم أعد التسعير
+            if (data.requiresPackageSelection) {
+              _showPackageSelection(context, data.availablePackages);
+            } else {
+              _showSummary(context, data);
+            }
           }
         },
         child: SingleChildScrollView(
