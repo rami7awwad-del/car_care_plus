@@ -41,4 +41,8 @@ static const String showPoints = 'points/show';
   static const String showCar = 'show/';
   static const String updateCar = 'update/';
   static const String deleteCar = 'delete/';
+
+  // Ratings Endpoints
+  static const String ratings = 'ratings';           // قائمتي (GET) + إنشاء (POST)
+  static String ratingById(int id) => 'ratings/$id'; // تفاصيل (GET) + تعديل (POST)
 }
