@@ -44,8 +44,8 @@ class _BookingSetupViewState extends State<BookingSetupView> {
   
   final TextEditingController _notesController = TextEditingController();
 
-  double _lat = 10;
-  double _lng = 10;
+  double? _lat;
+  double? _lng;
   String? _locationAddress;
 
   @override
@@ -77,21 +77,38 @@ class _BookingSetupViewState extends State<BookingSetupView> {
       return;
     }
 
+    // الموقع مطلوب: شارك موقعك الحالي (GPS) قبل التسعير
+    if (_lat == null || _lng == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'يرجى تحديد موقعك الحالي أولاً',
+            style: TextStyles.Size15.withColor(Colors.white),
+          ),
+          backgroundColor: AppColors.warningColor,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.r),
+          ),
+        ),
+      );
+      return;
+    }
+
     final requestBody = BookingQuoteRequestBody(
       carIds: widget.carIds,
       serviceId: widget.serviceId,
-      bookingType: _bookingType,
+      isScheduled: _bookingType,
+      scheduledAt: _bookingType ? _scheduledAt : null,
       paymentMethod: _paymentMethod,
       userPackageId: _paymentMethod == 'package' ? _selectedUserPackageId : null,
-      scheduledAt: _bookingType ? _scheduledAt : null,
       locationLat: _lat,
       locationLng: _lng,
       locationAddress: _locationAddress,
-      isVip: _isVip ? 1 : 0, // 👈 إرسال 1 عند اختيار VIP و 0 عند عدم الاختيار
+      isVip: _isVip,
       subServiceIds: widget.subServiceIds,
       materials: widget.materials,
       notes: _notesController.text.isNotEmpty ? _notesController.text : null,
-      branchId: 1,
     );
 
     context.read<BookingCubit>().emitBookingQuote(requestBody);
