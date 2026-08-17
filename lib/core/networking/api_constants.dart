@@ -36,6 +36,9 @@ static const String showPoints = 'points/show';
   static const String bookingQuote = 'bookings/quote';
   static const String bookingConfirm = 'bookings/confirm';
 
+  // Workshops (لاختيار ورشة الصيانة)
+  static const String workshopsNearby = 'workshops/nearby';
+
   // Car Management Endpoints
   static const String createCar = '';
   static const String showCar = 'show/';
