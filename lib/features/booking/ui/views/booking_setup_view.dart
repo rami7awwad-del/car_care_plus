@@ -55,10 +55,14 @@ class _BookingSetupViewState extends State<BookingSetupView> {
 
   int? _workshopId;
   String? _workshopName;
+  final TextEditingController _destinationController = TextEditingController();
 
   // نوع الحجز يُشتقّ من تصنيف الخدمة
   bool get _isMaintenance =>
       (widget.categoryName ?? '').toLowerCase().contains('maintenance');
+
+  bool get _isTowing =>
+      (widget.categoryName ?? '').toLowerCase().contains('towing');
 
   @override
   void initState() {
@@ -72,6 +76,7 @@ class _BookingSetupViewState extends State<BookingSetupView> {
   @override
   void dispose() {
     _notesController.dispose();
+    _destinationController.dispose();
     super.dispose();
   }
 
@@ -127,6 +132,24 @@ class _BookingSetupViewState extends State<BookingSetupView> {
       return;
     }
 
+    // السحب يتطلّب وجهة النقل
+    if (_isTowing && _destinationController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'يرجى تحديد وجهة السحب أولاً',
+            style: TextStyles.Size15.withColor(Colors.white),
+          ),
+          backgroundColor: AppColors.warningColor,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.r),
+          ),
+        ),
+      );
+      return;
+    }
+
     final requestBody = BookingQuoteRequestBody(
       carIds: widget.carIds,
       serviceId: widget.serviceId,
@@ -139,6 +162,8 @@ class _BookingSetupViewState extends State<BookingSetupView> {
       locationAddress: _locationAddress,
       isVip: _isVip,
       workshopId: _isMaintenance ? _workshopId : null,
+      destinationAddress:
+          _isTowing ? _destinationController.text.trim() : null,
       subServiceIds: widget.subServiceIds,
       materials: widget.materials,
       notes: _notesController.text.isNotEmpty ? _notesController.text : null,
@@ -331,6 +356,71 @@ class _BookingSetupViewState extends State<BookingSetupView> {
     );
   }
 
+  Widget _buildTowingSection() {
+    return Container(
+      padding: EdgeInsets.all(16.r),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceWhite,
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.cardShadowColor,
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.local_shipping_outlined,
+                  color: AppColors.primaryBlue, size: 20.r),
+              SizedBox(width: 6.w),
+              Text(
+                'وجهة السحب',
+                style: TextStyles.Size18
+                    .withWeight(FontWeight.bold)
+                    .withColor(AppColors.darkBlueBlack),
+              ),
+            ],
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            'العنوان الذي تريد سحب سيارتك إليه',
+            style: TextStyles.Size10.withColor(AppColors.coolGrey),
+          ),
+          SizedBox(height: 12.h),
+          TextField(
+            controller: _destinationController,
+            style: TextStyles.Size15.withColor(AppColors.darkBlueBlack),
+            decoration: InputDecoration(
+              hintText: 'مثال: الرياض - حي النخيل - ورشة الأمانة',
+              hintStyle: TextStyles.Size15.withColor(AppColors.coolGrey),
+              prefixIcon: Icon(Icons.flag_outlined,
+                  color: AppColors.primaryBlue, size: 20.r),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.r),
+                borderSide: const BorderSide(color: AppColors.borderGrey),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.r),
+                borderSide: const BorderSide(color: AppColors.borderGrey),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.r),
+                borderSide:
+                    const BorderSide(color: AppColors.primaryBlue, width: 1.5),
+              ),
+              contentPadding: EdgeInsets.all(14.r),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -448,6 +538,12 @@ class _BookingSetupViewState extends State<BookingSetupView> {
               // 3.1 ورشة الصيانة (تظهر فقط لخدمات الصيانة)
               if (_isMaintenance) ...[
                 _buildWorkshopSection(),
+                SizedBox(height: 20.h),
+              ],
+
+              // 3.2 وجهة السحب (تظهر فقط لخدمات السحب)
+              if (_isTowing) ...[
+                _buildTowingSection(),
                 SizedBox(height: 20.h),
               ],
 

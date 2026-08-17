@@ -42,33 +42,25 @@ class PackagesCubit extends Cubit<PackagesState> {
   }
 
 
-void emitSubscribeToPackage({
-  required int packageId,
-  required double packagePrice,
-}) async {
-  emit(SubscribePackageLoading());
-  try {
-    // 1️⃣ التحقق من رصيد المحفظة الحالي
-    final balance = await _packagesRepo.getMyWalletBalance();
-
-    if (balance < packagePrice) {
-      emit(PackagesError(
-        'رصيد المحفظة غير كافٍ للاشتراك. الرصيد الحالي: $balance ل.س، وسعر الباقة: $packagePrice ل.س',
-      ));
-      return;
+  /// جلب تفاصيل باقة معيّنة (لعرضها في ورقة التفاصيل)
+  void emitGetPackageDetails(int packageId) async {
+    emit(PackageDetailsLoading());
+    try {
+      final package = await _packagesRepo.getPackageDetails(packageId);
+      emit(PackageDetailsSuccess(package));
+    } catch (error) {
+      emit(PackagesError(error.toString()));
     }
-
-    // 2️⃣ خصم قيمة الباقة من المحفظة
-    await _packagesRepo.adjustWalletBalance(
-      amount: -packagePrice,
-      notes: 'خصم اشتراك باقة رقم $packageId',
-    );
-
-    // 3️⃣ تفعيل الاشتراك بالباقة بعد نجاح الخصم
-    final userPackage = await _packagesRepo.subscribeToPackage(packageId);
-    emit(SubscribePackageSuccess(userPackage));
-  } catch (error) {
-    emit(PackagesError(error.toString()));
   }
-}
+
+  /// الاشتراك في باقة — السيرفر يتكفّل بالدفع/الخصم تلقائياً
+  void emitSubscribeToPackage({required int packageId}) async {
+    emit(SubscribePackageLoading());
+    try {
+      final userPackage = await _packagesRepo.subscribeToPackage(packageId);
+      emit(SubscribePackageSuccess(userPackage));
+    } catch (error) {
+      emit(PackagesError(error.toString()));
+    }
+  }
 }

@@ -25,10 +25,8 @@ class _PackageDetailsBottomSheetState extends State<PackageDetailsBottomSheet> {
   @override
   void initState() {
     super.initState();
-    context.read<PackagesCubit>().emitSubscribeToPackage(
-      packageId: widget.packageId,
-      packagePrice: widget.packagePrice,
-    );
+    // جلب تفاصيل الباقة عند الفتح (وليس الاشتراك)
+    context.read<PackagesCubit>().emitGetPackageDetails(widget.packageId);
   }
 
   @override
@@ -43,7 +41,7 @@ class _PackageDetailsBottomSheetState extends State<PackageDetailsBottomSheet> {
 
       messenger.showSnackBar(
         const SnackBar(
-          content: Text('تم الاشتراك بالباقة وخصم القيمة من المحفظة بنجاح!'),
+          content: Text('تم الاشتراك بالباقة بنجاح!'),
           backgroundColor: Colors.green,
         ),
       );
@@ -190,10 +188,8 @@ class _PackageDetailsBottomSheetState extends State<PackageDetailsBottomSheet> {
                   onPressed: isLoading
       ? null
       : () {
-          final packagePrice = double.tryParse(package.price.toString()) ?? 0.0;
           context.read<PackagesCubit>().emitSubscribeToPackage(
                 packageId: package.id,
-                packagePrice: packagePrice,
               );
         },
   style: ElevatedButton.styleFrom(
