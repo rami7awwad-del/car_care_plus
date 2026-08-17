@@ -4,9 +4,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:car_care_plus/core/resources/app_color.dart';
 import 'package:car_care_plus/core/resources/text_style.dart';
 class LocationPickerWidget extends StatefulWidget {
-  final double initialLat;
-  final double initialLng;
-  final Function(double lat, double lng, String? address) onLocationChanged;
+  final double? initialLat;
+  final double? initialLng;
+  final Function(double? lat, double? lng, String? address) onLocationChanged;
 
   const LocationPickerWidget({
     super.key,

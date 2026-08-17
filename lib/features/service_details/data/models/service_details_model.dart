@@ -8,6 +8,7 @@ class ServiceDetailsModel {
   final double? vipExtraPrice;
   final int durationMinutes;
   final String imageUrl;
+  final ServiceCategoryRef? category;
 
   ServiceDetailsModel({
     required this.id,
@@ -19,7 +20,12 @@ class ServiceDetailsModel {
     this.vipExtraPrice,
     required this.durationMinutes,
     required this.imageUrl,
+    this.category,
   });
+
+  /// نوع الحجز يُشتقّ من اسم التصنيف الإنجليزي (Maintenance / Car Wash / Roadside Assistance)
+  bool get isMaintenance =>
+      (category?.name ?? '').toLowerCase().contains('maintenance');
 
   factory ServiceDetailsModel.fromJson(Map<String, dynamic> json) {
     // دالة مساعدة لتحويل القيم العددية بأمان سواًء جاءت String أو num
@@ -48,10 +54,33 @@ const String defaultCarServiceAsset = 'assets/images/logo.png';
       imageUrl: (json['assets/images/logo.png'] ?? json['image'] ?? '').toString().isNotEmpty
           ? (json['assets/images/logo.png'] ?? json['image']).toString()
           : defaultCarServiceAsset,
+      category: json['category'] != null
+          ? ServiceCategoryRef.fromJson(json['category'])
+          : null,
     );
   }
 
   // Getters مساعدة لتسهيل القراءة في الـ UI
   String get displayTitle => nameAr.isNotEmpty ? nameAr : name;
   String get formattedDuration => '$durationMinutes دقيقة';
+}
+
+class ServiceCategoryRef {
+  final int id;
+  final String name;
+  final String nameAr;
+
+  ServiceCategoryRef({
+    required this.id,
+    required this.name,
+    required this.nameAr,
+  });
+
+  factory ServiceCategoryRef.fromJson(Map<String, dynamic> json) {
+    return ServiceCategoryRef(
+      id: json['id'] as int? ?? 0,
+      name: json['name'] as String? ?? '',
+      nameAr: json['name_ar'] as String? ?? '',
+    );
+  }
 }

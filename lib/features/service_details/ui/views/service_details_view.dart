@@ -288,6 +288,7 @@ class _ServiceDetailsViewState extends State<ServiceDetailsView> {
                                 child: BookingSetupView(
                                   serviceId: widget.serviceId,
                                   carIds: [selectedCar!.id],
+                                  categoryName: service.category?.name,
                                   subServiceIds:
                                       selectedSubServiceIds.isNotEmpty
                                       ? selectedSubServiceIds

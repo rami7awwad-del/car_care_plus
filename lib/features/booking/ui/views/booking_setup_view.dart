@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../data/models/booking_quote_request_body.dart';
+import '../../data/models/booking_quote_response_model.dart';
 import '../../logic/booking_cubit.dart';
 import '../../logic/booking_state.dart';
 import 'package:car_care_plus/core/resources/app_color.dart';
@@ -15,11 +16,14 @@ import 'package:car_care_plus/features/packages/logic/packages_state.dart';
 import '../widgets/booking_schedule_picker.dart';
 import '../widgets/booking_summary_bottom_sheet.dart';
 import '../widgets/location_picker_widget.dart';
+import '../widgets/package_selection_bottom_sheet.dart';
 import '../widgets/payment_method_selector.dart';
+import 'package:car_care_plus/features/workshops/ui/widgets/workshop_selection_bottom_sheet.dart';
 
 class BookingSetupView extends StatefulWidget {
   final int serviceId;
   final List<int> carIds;
+  final String? categoryName; // اسم تصنيف الخدمة (لاشتقاق نوع الحجز)
   final List<int>? subServiceIds;
   final List<Map<String, dynamic>>? materials;
 
@@ -27,6 +31,7 @@ class BookingSetupView extends StatefulWidget {
     super.key,
     required this.serviceId,
     required this.carIds,
+    this.categoryName,
     this.subServiceIds,
     this.materials,
   });
@@ -44,15 +49,24 @@ class _BookingSetupViewState extends State<BookingSetupView> {
   
   final TextEditingController _notesController = TextEditingController();
 
-  double _lat = 10;
-  double _lng = 10;
+  double? _lat;
+  double? _lng;
   String? _locationAddress;
+
+  int? _workshopId;
+  String? _workshopName;
+
+  // نوع الحجز يُشتقّ من تصنيف الخدمة
+  bool get _isMaintenance =>
+      (widget.categoryName ?? '').toLowerCase().contains('maintenance');
 
   @override
   void initState() {
     super.initState();
     context.read<PointsCubit>().fetchUserPoints();
     context.read<PackagesCubit>().emitFetchPackagesData();
+    // الصيانة تُدفع نقداً فقط
+    if (_isMaintenance) _paymentMethod = 'cash';
   }
 
   @override
@@ -77,24 +91,244 @@ class _BookingSetupViewState extends State<BookingSetupView> {
       return;
     }
 
+    // الموقع مطلوب: شارك موقعك الحالي (GPS) قبل التسعير
+    if (_lat == null || _lng == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'يرجى تحديد موقعك الحالي أولاً',
+            style: TextStyles.Size15.withColor(Colors.white),
+          ),
+          backgroundColor: AppColors.warningColor,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.r),
+          ),
+        ),
+      );
+      return;
+    }
+
+    // الصيانة تتطلّب اختيار ورشة نشطة
+    if (_isMaintenance && _workshopId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'يرجى اختيار ورشة الصيانة أولاً',
+            style: TextStyles.Size15.withColor(Colors.white),
+          ),
+          backgroundColor: AppColors.warningColor,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.r),
+          ),
+        ),
+      );
+      return;
+    }
+
     final requestBody = BookingQuoteRequestBody(
       carIds: widget.carIds,
       serviceId: widget.serviceId,
-      bookingType: _bookingType,
+      isScheduled: _bookingType,
+      scheduledAt: _bookingType ? _scheduledAt : null,
       paymentMethod: _paymentMethod,
       userPackageId: _paymentMethod == 'package' ? _selectedUserPackageId : null,
-      scheduledAt: _bookingType ? _scheduledAt : null,
       locationLat: _lat,
       locationLng: _lng,
       locationAddress: _locationAddress,
-      isVip: _isVip ? 1 : 0, // 👈 إرسال 1 عند اختيار VIP و 0 عند عدم الاختيار
+      isVip: _isVip,
+      workshopId: _isMaintenance ? _workshopId : null,
       subServiceIds: widget.subServiceIds,
       materials: widget.materials,
       notes: _notesController.text.isNotEmpty ? _notesController.text : null,
-      branchId: 1,
     );
 
     context.read<BookingCubit>().emitBookingQuote(requestBody);
+  }
+
+  void _showSummary(BuildContext context, QuoteData data) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => BlocProvider.value(
+        value: context.read<BookingCubit>(),
+        child: BookingSummaryBottomSheet(quoteData: data),
+      ),
+    );
+  }
+
+  void _showPackageSelection(
+    BuildContext context,
+    List<AvailablePackage> packages,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => PackageSelectionBottomSheet(
+        packages: packages,
+        onSelect: (id) {
+          Navigator.pop(sheetContext);
+          setState(() => _selectedUserPackageId = id);
+          _getQuote(); // إعادة التسعير بالباقة المختارة
+        },
+      ),
+    );
+  }
+
+  void _openWorkshopSelection() {
+    if (_lat == null || _lng == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'يرجى تحديد موقعك أولاً لعرض الورش القريبة',
+            style: TextStyles.Size15.withColor(Colors.white),
+          ),
+          backgroundColor: AppColors.warningColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => WorkshopSelectionBottomSheet(
+        latitude: _lat!,
+        longitude: _lng!,
+        onSelect: (workshop) {
+          Navigator.pop(sheetContext);
+          setState(() {
+            _workshopId = workshop.id;
+            _workshopName = workshop.displayName;
+          });
+        },
+      ),
+    );
+  }
+
+  Widget _buildWorkshopSection() {
+    return Container(
+      padding: EdgeInsets.all(16.r),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceWhite,
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.cardShadowColor,
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.build_circle_outlined,
+                  color: AppColors.primaryBlue, size: 20.r),
+              SizedBox(width: 6.w),
+              Text(
+                'ورشة الصيانة',
+                style: TextStyles.Size18
+                    .withWeight(FontWeight.bold)
+                    .withColor(AppColors.darkBlueBlack),
+              ),
+            ],
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            'اختر ورشة نشطة قريبة لإتمام حجز الصيانة',
+            style: TextStyles.Size10.withColor(AppColors.coolGrey),
+          ),
+          SizedBox(height: 12.h),
+          if (_workshopName != null)
+            Row(
+              children: [
+                Icon(Icons.check_circle_rounded,
+                    color: AppColors.successColor, size: 22.r),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: Text(
+                    _workshopName!,
+                    style: TextStyles.Size15
+                        .withWeight(FontWeight.bold)
+                        .withColor(AppColors.darkBlueBlack),
+                  ),
+                ),
+                TextButton(
+                  onPressed: _openWorkshopSelection,
+                  child: Text(
+                    'تغيير',
+                    style: TextStyles.Size15
+                        .withWeight(FontWeight.bold)
+                        .withColor(AppColors.primaryBlue),
+                  ),
+                ),
+              ],
+            )
+          else
+            OutlinedButton.icon(
+              onPressed: _openWorkshopSelection,
+              style: OutlinedButton.styleFrom(
+                minimumSize: Size(double.infinity, 48.h),
+                side: const BorderSide(color: AppColors.primaryBlue),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+              ),
+              icon: Icon(Icons.add_location_alt_outlined,
+                  color: AppColors.primaryBlue, size: 20.r),
+              label: Text(
+                'اختر الورشة',
+                style: TextStyles.Size15
+                    .withWeight(FontWeight.w600)
+                    .withColor(AppColors.primaryBlue),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCashOnlyNote() {
+    return Container(
+      padding: EdgeInsets.all(16.r),
+      decoration: BoxDecoration(
+        color: AppColors.lightBlueSurface,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: AppColors.primaryBlue.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.payments_outlined,
+              color: AppColors.primaryBlue, size: 22.r),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'طريقة الدفع: نقداً',
+                  style: TextStyles.Size15
+                      .withWeight(FontWeight.bold)
+                      .withColor(AppColors.darkBlueBlack),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  'خدمات الصيانة تُدفع نقداً فقط',
+                  style: TextStyles.Size10.withColor(AppColors.coolGrey),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -122,17 +356,13 @@ class _BookingSetupViewState extends State<BookingSetupView> {
               ),
             );
           } else if (state is BookingQuoteSuccessState) {
-            showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              backgroundColor: Colors.transparent,
-              builder: (_) => BlocProvider.value(
-                value: context.read<BookingCubit>(),
-                child: BookingSummaryBottomSheet(
-                  quoteData: state.quoteResponse.data!,
-                ),
-              ),
-            );
+            final data = state.quoteResponse.data!;
+            // الدفع بالباقة دون اختيارها: اعرض قائمة الباقات ثم أعد التسعير
+            if (data.requiresPackageSelection) {
+              _showPackageSelection(context, data.availablePackages);
+            } else {
+              _showSummary(context, data);
+            }
           }
         },
         child: SingleChildScrollView(
@@ -215,8 +445,17 @@ class _BookingSetupViewState extends State<BookingSetupView> {
               ),
               SizedBox(height: 20.h),
 
-              // 4. اختيار طريقة الدفع
-              BlocBuilder<PointsCubit, PointsState>(
+              // 3.1 ورشة الصيانة (تظهر فقط لخدمات الصيانة)
+              if (_isMaintenance) ...[
+                _buildWorkshopSection(),
+                SizedBox(height: 20.h),
+              ],
+
+              // 4. طريقة الدفع (الصيانة نقداً فقط)
+              if (_isMaintenance)
+                _buildCashOnlyNote()
+              else
+                BlocBuilder<PointsCubit, PointsState>(
   builder: (context, pointsState) {
     final pointsBalance = pointsState is PointsSuccessState
         ? (pointsState.pointsData.balance ?? 0)
