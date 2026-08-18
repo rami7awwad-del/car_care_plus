@@ -1,40 +1,53 @@
-import 'package:car_care_plus/features/wallet_and_payments/data/models/payment_model.dart';
+import 'package:car_care_plus/features/orders/data/booking_model.dart';
 import 'package:car_care_plus/features/wallet_and_payments/data/models/wallet_response_model.dart';
 import 'package:car_care_plus/features/wallet_and_payments/data/models/wallet_transaction_model.dart';
 
-
-
 abstract class WalletPaymentState {}
 
-/// الحالة الأولية
 class WalletPaymentInitialState extends WalletPaymentState {}
 
-/// حالة التحميل
 class WalletPaymentLoadingState extends WalletPaymentState {}
 
-/// حالة النجاح عند جلب المحفظة والمدفوعات
 class WalletPaymentSuccessState extends WalletPaymentState {
   final WalletData wallet;
-  final List<PaymentItemModel> payments;
   final List<WalletTransactionItemModel> transactions;
+  final WalletPagination? pagination;
+
+  /// صفحة إضافية من السجل قيد التحميل
+  final bool isLoadingMore;
 
   WalletPaymentSuccessState({
     required this.wallet,
-    required this.payments,
     required this.transactions,
+    this.pagination,
+    this.isLoadingMore = false,
   });
+
+  bool get hasMore => pagination?.hasNextPage ?? false;
+
+  WalletPaymentSuccessState copyWith({
+    WalletData? wallet,
+    List<WalletTransactionItemModel>? transactions,
+    WalletPagination? pagination,
+    bool? isLoadingMore,
+  }) {
+    return WalletPaymentSuccessState(
+      wallet: wallet ?? this.wallet,
+      transactions: transactions ?? this.transactions,
+      pagination: pagination ?? this.pagination,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+    );
+  }
 }
 
-/// حالة جلب تفاصيل دفع محددة
 class PaymentDetailLoadingState extends WalletPaymentState {}
 
 class PaymentDetailSuccessState extends WalletPaymentState {
-  final PaymentItemModel paymentDetail;
+  final BookingModel paymentDetail;
 
   PaymentDetailSuccessState(this.paymentDetail);
 }
 
-/// حالة الخطأ
 class WalletPaymentErrorState extends WalletPaymentState {
   final String message;
 

@@ -2,6 +2,7 @@ import 'package:car_care_plus/core/resources/app_color.dart';
 import 'package:car_care_plus/core/resources/text_style.dart';
 import 'package:car_care_plus/core/routing/app_routes.dart';
 import 'package:car_care_plus/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:car_care_plus/features/notifications/logic/notifications_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -58,6 +59,8 @@ class PendingApprovalPage extends StatelessWidget {
                     ),
                   ),
                   onPressed: () {
+                    // تفريغ شارة الإشعارات وقائمتها وإيقاف الاستطلاع قبل الخروج
+                    context.read<NotificationsCubit>().clear();
                     context.read<AuthCubit>().logout();
                     Navigator.pushNamedAndRemoveUntil(
                       context,

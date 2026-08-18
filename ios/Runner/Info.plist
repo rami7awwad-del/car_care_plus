@@ -72,5 +72,12 @@
         <string>UIInterfaceOrientationLandscapeLeft</string>
         <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
+    <!-- مطلوب حتى يعمل canLaunchUrl للاتصال وفتح الخرائط على iOS -->
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+        <string>tel</string>
+        <string>maps</string>
+        <string>comgooglemaps</string>
+    </array>
 </dict>
 </plist>

@@ -52,10 +52,15 @@ class PackagesRepo {
     }
   }
   /// 5️⃣ جلب رصيد محفظة المستخدم الحالي
+  ///
+  /// ⚠️ `balance` يصل كنص (`"1250.00"`) لأنه decimal cast، والتحويل المباشر
+  /// إلى num كان يرمي استثناءً.
   Future<double> getMyWalletBalance() async {
     try {
       final response = await _apiService.get(endpoint: 'wallets/my');
-      return (response.data['data']['balance'] as num).toDouble();
+      final raw = response.data['data']?['balance'];
+      if (raw is num) return raw.toDouble();
+      return double.tryParse(raw?.toString() ?? '') ?? 0.0;
     } catch (error) {
       rethrow;
     }

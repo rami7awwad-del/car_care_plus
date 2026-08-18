@@ -131,21 +131,47 @@ class PriceDetailItem {
   }
 }
 
-/// باقة متاحة لهذا الحجز (من ردّ "اختر باقة")
+/// اشتراك متاح لهذا الحجز (من ردّ "اختر باقة").
+///
+/// ⚠️ `id` هنا هو معرّف **الاشتراك** (user_package) لا معرّف الخطة (package)،
+/// وهو ما يُرسل في `user_package_id` عند إعادة التسعير.
 class AvailablePackage {
   final int id;
   final String name;
 
-  AvailablePackage({required this.id, required this.name});
+  /// عدد الاستخدامات المتبقية — كل سيارة في الحجز تستهلك استخداماً واحداً
+  final int remainingCount;
+
+  /// تاريخ الانتهاء بصيغة `YYYY-MM-DD` (تاريخ فقط بلا وقت)
+  final String? endDate;
+
+  AvailablePackage({
+    required this.id,
+    required this.name,
+    this.remainingCount = 0,
+    this.endDate,
+  });
 
   factory AvailablePackage.fromJson(Map<String, dynamic> json) {
     final details = json['package_details'] ?? json['package'];
     final name = (details is Map ? details['name'] : null) ??
         json['name'] ??
         'باقة';
+
     return AvailablePackage(
       id: json['id'] as int? ?? 0,
       name: name.toString(),
+      remainingCount: _toInt(json['remaining_count']),
+      endDate: json['end_date']?.toString(),
     );
+  }
+
+  /// هل تكفي الاستخدامات المتبقية لعدد سيارات الحجز؟
+  bool coversCars(int carCount) => remainingCount >= carCount;
+
+  static int _toInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '') ?? 0;
   }
 }

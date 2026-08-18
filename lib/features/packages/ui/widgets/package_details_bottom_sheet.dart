@@ -1,246 +1,381 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:car_care_plus/core/resources/app_color.dart';
 import 'package:car_care_plus/core/resources/text_style.dart';
 import 'package:car_care_plus/features/packages/data/models/package_model.dart';
 import 'package:car_care_plus/features/packages/logic/packages_cubit.dart';
 import 'package:car_care_plus/features/packages/logic/packages_state.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class PackageDetailsBottomSheet extends StatefulWidget {
   final int packageId;
-  final double packagePrice;
 
-  const PackageDetailsBottomSheet({
-    super.key,
-    required this.packageId,
-    required this.packagePrice,
-  });
+  const PackageDetailsBottomSheet({super.key, required this.packageId});
 
   @override
-  State<PackageDetailsBottomSheet> createState() => _PackageDetailsBottomSheetState();
+  State<PackageDetailsBottomSheet> createState() =>
+      _PackageDetailsBottomSheetState();
 }
 
 class _PackageDetailsBottomSheetState extends State<PackageDetailsBottomSheet> {
   @override
   void initState() {
     super.initState();
-    // جلب تفاصيل الباقة عند الفتح (وليس الاشتراك)
     context.read<PackagesCubit>().emitGetPackageDetails(widget.packageId);
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<PackagesCubit, PackagesState>(
+    return BlocConsumer<PackagesCubit, PackagesState>(
+      listenWhen: (previous, current) =>
+          previous.successMessage != current.successMessage,
       listener: (context, state) {
-    if (state is SubscribePackageSuccess) {
-      final messenger = ScaffoldMessenger.of(context);
-      final cubit = context.read<PackagesCubit>();
-
-      Navigator.pop(context);
-
-      messenger.showSnackBar(
-        const SnackBar(
-          content: Text('تم الاشتراك بالباقة بنجاح!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      cubit.emitFetchPackagesData();
-    } else if (state is PackagesError) {
-      // إظهار رسالة الخطأ (مثل: رصيد المحفظة غير كافٍ)
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(state.error),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  },
-      child: Container(
-        padding: EdgeInsets.all(20.r),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceWhite,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-        ),
-        child: BlocBuilder<PackagesCubit, PackagesState>(
-          builder: (context, state) {
-            if (state is PackageDetailsLoading) {
-              return SizedBox(
-                height: 250.h,
-                child: const Center(child: CircularProgressIndicator()),
-              );
-            } else if (state is PackageDetailsSuccess) {
-              final package = state.packageDetails;
-              return _buildPackageDetailsContent(context, package);
-            }
-
-            return SizedBox(
-              height: 200.h,
-              child: const Center(child: CircularProgressIndicator()),
-            );
-          },
-        ),
-      ),
+        // نغلق الورقة بعد نجاح الاشتراك، والشاشة خلفها تعرض الرسالة
+        if (state.successMessage != null && mounted) {
+          Navigator.pop(context);
+        }
+      },
+      builder: (context, state) {
+        return Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.85,
+          ),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceWhite,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(26.r)),
+          ),
+          padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
+          child: state.isLoadingDetails || state.selectedPackage == null
+              ? SizedBox(
+                  height: 220.h,
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primaryBlue,
+                    ),
+                  ),
+                )
+              : _buildContent(context, state, state.selectedPackage!),
+        );
+      },
     );
   }
 
-  Widget _buildPackageDetailsContent(BuildContext context, PackageModel package) {
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // مقبض السحب السفلي
-          Center(
-            child: Container(
-              width: 40.w,
-              height: 4.h,
-              margin: EdgeInsets.only(bottom: 16.h),
-              decoration: BoxDecoration(
-                color: AppColors.coolGrey.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(2.r),
-              ),
+  Widget _buildContent(
+    BuildContext context,
+    PackagesState state,
+    PackageModel package,
+  ) {
+    final isCurrent = state.isCurrentSubscription(package.id);
+    final canSubscribe = state.canSubscribeTo(package);
+    final blockedReason = state.blockedReasonFor(package);
+    final isSubscribing = state.subscribingPackageId == package.id;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Center(
+          child: Container(
+            width: 44.w,
+            height: 4.h,
+            decoration: BoxDecoration(
+              color: AppColors.borderGrey,
+              borderRadius: BorderRadius.circular(4.r),
             ),
           ),
-
-          // عنوان الباقة ونوعها
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  package.name,
-                  style: TextStyles.Size15.withWeight(
-                    FontWeight.bold,
-                  ).withColor(AppColors.darkBlueBlack),
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 10.w,
-                  vertical: 4.h,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: Text(
-                  package.type,
-                  style: TextStyles.Size10.withWeight(
-                    FontWeight.bold,
-                  ).withColor(AppColors.primaryBlue),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-
-          // الإحصائيات (السعر / عدد الخدمات / مدة الصلاحية)
-          Row(
-            children: [
-              _buildInfoBadge(
-                icon: Icons.payments_outlined,
-                title: 'السعر',
-                value: '${package.price} ل.س',
-                color: Colors.green,
-              ),
-              SizedBox(width: 8.w),
-              _buildInfoBadge(
-                icon: Icons.build_outlined,
-                title: 'الخدمات',
-                value: '${package.servicesCount} خدمات',
-                color: AppColors.primaryBlue,
-              ),
-              SizedBox(width: 8.w),
-              _buildInfoBadge(
-                icon: Icons.calendar_today_outlined,
-                title: 'الصلاحية',
-                value: '${package.validDays} يوم',
-                color: Colors.orange,
-              ),
-            ],
-          ),
-          SizedBox(height: 20.h),
-
-          // وصف الباقة
-          Text(
-            'تفاصيل الباقة',
-            style: TextStyles.Size15.withWeight(
-              FontWeight.bold,
-            ).withColor(AppColors.darkBlueBlack),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            package.description ?? 'لا يوجد وصف إضافي لهذه الباقة.',
-            style: TextStyles.Size15.withColor(AppColors.coolGrey),
-          ),
-          SizedBox(height: 20.h),
-
-          // زر الاشتراك
-          BlocBuilder<PackagesCubit, PackagesState>(
-            builder: (context, state) {
-              final isLoading = state is SubscribePackageLoading;
-
-              return SizedBox(
-                width: double.infinity,
-                height: 50.h,
-                child: ElevatedButton(
-                  onPressed: isLoading
-      ? null
-      : () {
-          context.read<PackagesCubit>().emitSubscribeToPackage(
-                packageId: package.id,
-              );
-        },
-  style: ElevatedButton.styleFrom(
-    backgroundColor: AppColors.primaryBlue,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(12.r),
-    ),
-  ),
-  child: isLoading
-      ? const CircularProgressIndicator(color: Colors.white)
-      : Text(
-          'الاشتراك في الباقة الآن',
-          style: TextStyles.Size15.withWeight(
-            FontWeight.bold,
-          ).withColor(Colors.white),
         ),
+        SizedBox(height: 18.h),
+
+        Flexible(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 52.w,
+                      height: 52.h,
+                      decoration: BoxDecoration(
+                        color:
+                            (isCurrent
+                                    ? AppColors.successColor
+                                    : AppColors.primaryBlue)
+                                .withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(16.r),
+                      ),
+                      child: Icon(
+                        isCurrent
+                            ? Icons.verified_rounded
+                            : Icons.card_membership_rounded,
+                        color: isCurrent
+                            ? AppColors.successColor
+                            : AppColors.primaryBlue,
+                        size: 26.r,
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            package.name,
+                            style: TextStyles.Size18
+                                .withColor(AppColors.darkBlueBlack)
+                                .withWeight(FontWeight.bold),
+                          ),
+                          if (package.type.trim().isNotEmpty) ...[
+                            SizedBox(height: 6.h),
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 9.w,
+                                vertical: 4.h,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.lightBlueSurface,
+                                borderRadius: BorderRadius.circular(20.r),
+                              ),
+                              child: Text(
+                                package.type,
+                                style: TextStyles.Size10
+                                    .withColor(AppColors.primaryBlue)
+                                    .withWeight(FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              );
-            },
+                SizedBox(height: 20.h),
+
+                Row(
+                  children: [
+                    _InfoTile(
+                      icon: Icons.payments_outlined,
+                      title: 'السعر',
+                      value: '${package.price} ل.س',
+                      color: AppColors.successColor,
+                    ),
+                    SizedBox(width: 10.w),
+                    _InfoTile(
+                      icon: Icons.build_outlined,
+                      title: 'الخدمات',
+                      value: '${package.servicesCount}',
+                      color: AppColors.primaryBlue,
+                    ),
+                    SizedBox(width: 10.w),
+                    _InfoTile(
+                      icon: Icons.calendar_today_outlined,
+                      title: 'الصلاحية',
+                      value: '${package.validDays} يوم',
+                      color: AppColors.goldAccent,
+                    ),
+                  ],
+                ),
+                SizedBox(height: 22.h),
+
+                Text(
+                  'عن الباقة',
+                  style: TextStyles.Size15
+                      .withColor(AppColors.darkBlueBlack)
+                      .withWeight(FontWeight.bold),
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  package.description?.trim().isNotEmpty == true
+                      ? package.description!.trim()
+                      : 'لا يوجد وصف إضافي لهذه الباقة.',
+                  style: TextStyles.Size15
+                      .withColor(AppColors.coolGrey)
+                      .withHeight(1.7),
+                ),
+                SizedBox(height: 20.h),
+              ],
+            ),
           ),
-          SizedBox(height: 10.h),
+        ),
+
+        // حالة الاشتراك: لا يُسمح بأكثر من باقة نشطة في الوقت نفسه
+        if (blockedReason != null) ...[
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+            decoration: BoxDecoration(
+              color: isCurrent
+                  ? AppColors.successColor.withOpacity(0.08)
+                  : AppColors.lightGoldSurface,
+              borderRadius: BorderRadius.circular(14.r),
+              border: Border.all(
+                color:
+                    (isCurrent
+                            ? AppColors.successColor
+                            : AppColors.goldAccent)
+                        .withOpacity(0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  isCurrent
+                      ? Icons.check_circle_rounded
+                      : Icons.info_outline_rounded,
+                  size: 17.r,
+                  color: isCurrent
+                      ? AppColors.successColor
+                      : AppColors.goldAccent,
+                ),
+                SizedBox(width: 9.w),
+                Expanded(
+                  child: Text(
+                    blockedReason,
+                    style: TextStyles.Size10
+                        .withColor(AppColors.darkBlueBlack)
+                        .withHeight(1.5),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 14.h),
+        ],
+
+        SizedBox(
+          width: double.infinity,
+          height: 52.h,
+          child: ElevatedButton(
+            // الزر معطّل تماماً ما دام هناك اشتراك نشط
+            onPressed: (!canSubscribe || isSubscribing)
+                ? null
+                : () => _confirmSubscribe(context, package),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryBlue,
+              disabledBackgroundColor: AppColors.borderGrey,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+            ),
+            child: isSubscribing
+                ? SizedBox(
+                    width: 20.r,
+                    height: 20.r,
+                    child: const CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: AppColors.surfaceWhite,
+                    ),
+                  )
+                : Text(
+                    isCurrent
+                        ? 'أنت مشترك في هذه الباقة'
+                        : (canSubscribe ? 'اشترك الآن' : 'غير متاح حالياً'),
+                    style: TextStyles.Size15
+                        .withColor(
+                          canSubscribe
+                              ? AppColors.surfaceWhite
+                              : AppColors.coolGrey,
+                        )
+                        .withWeight(FontWeight.bold),
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _confirmSubscribe(
+    BuildContext context,
+    PackageModel package,
+  ) async {
+    final cubit = context.read<PackagesCubit>();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18.r),
+        ),
+        title: Text(
+          'تأكيد الاشتراك',
+          style: TextStyles.Size18
+              .withColor(AppColors.darkBlueBlack)
+              .withWeight(FontWeight.bold),
+        ),
+        content: Text(
+          'سيتم الاشتراك في «${package.name}» وخصم ${package.price} ل.س من محفظتك.\n'
+          'لا يمكنك الاشتراك بباقة أخرى قبل انتهاء هذه الباقة.',
+          style: TextStyles.Size15
+              .withColor(AppColors.darkBlueBlack)
+              .withHeight(1.6),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('تراجع'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryBlue,
+            ),
+            child: Text(
+              'تأكيد',
+              style: TextStyles.Size15.withColor(AppColors.surfaceWhite),
+            ),
+          ),
         ],
       ),
     );
-  }
 
-  Widget _buildInfoBadge({
-    required IconData icon,
-    required String title,
-    required String value,
-    required Color color,
-  }) {
+    if (confirmed == true) {
+      await cubit.emitSubscribeToPackage(packageId: package.id);
+    }
+  }
+}
+
+class _InfoTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String value;
+  final Color color;
+
+  const _InfoTile({
+    required this.icon,
+    required this.title,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        padding: EdgeInsets.all(10.r),
+        padding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 8.w),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: color.withOpacity(0.2)),
+          color: color.withOpacity(0.07),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: color.withOpacity(0.18)),
         ),
         child: Column(
           children: [
             Icon(icon, color: color, size: 20.r),
-            SizedBox(height: 4.h),
-            Text(title, style: TextStyles.Size10.withColor(AppColors.coolGrey)),
-            SizedBox(height: 2.h),
+            SizedBox(height: 7.h),
+            Text(
+              title,
+              style: TextStyles.Size10.withColor(AppColors.coolGrey),
+            ),
+            SizedBox(height: 3.h),
             Text(
               value,
-              style: TextStyles.Size10.withWeight(
-                FontWeight.bold,
-              ).withColor(AppColors.darkBlueBlack),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyles.Size10
+                  .withColor(AppColors.darkBlueBlack)
+                  .withWeight(FontWeight.bold),
             ),
           ],
         ),

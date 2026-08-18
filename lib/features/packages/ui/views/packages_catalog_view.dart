@@ -1,13 +1,15 @@
+import 'package:car_care_plus/core/resources/app_color.dart';
+import 'package:car_care_plus/core/resources/text_style.dart';
+import 'package:car_care_plus/core/widgets/gradient_header.dart';
+import 'package:car_care_plus/features/packages/data/models/package_model.dart';
+import 'package:car_care_plus/features/packages/logic/packages_cubit.dart';
+import 'package:car_care_plus/features/packages/logic/packages_state.dart';
+import 'package:car_care_plus/features/packages/ui/widgets/active_subscription_card.dart';
+import 'package:car_care_plus/features/packages/ui/widgets/package_card.dart';
+import 'package:car_care_plus/features/packages/ui/widgets/package_details_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:car_care_plus/core/resources/app_color.dart';
-import 'package:car_care_plus/core/resources/text_style.dart';
-import 'package:car_care_plus/features/packages/data/models/package_model.dart';
-import 'package:car_care_plus/features/packages/data/models/user_package_model.dart';
-import 'package:car_care_plus/features/packages/logic/packages_cubit.dart';
-import 'package:car_care_plus/features/packages/logic/packages_state.dart';
-import 'package:car_care_plus/features/packages/ui/widgets/package_details_bottom_sheet.dart';
 
 class PackagesCatalogView extends StatefulWidget {
   const PackagesCatalogView({super.key});
@@ -23,309 +25,384 @@ class _PackagesCatalogViewState extends State<PackagesCatalogView> {
     context.read<PackagesCubit>().emitFetchPackagesData();
   }
 
-  void _showPackageDetails(BuildContext context, int packageId, String packagePriceStr) {
-  // 1️⃣ حفظ مرجع الـ Cubit من الـ Context الرئيسي قبل فتح الـ BottomSheet
-  final packagesCubit = context.read<PackagesCubit>();
-  
-  // تحويل السعر من String إلى double
-  final packagePrice = double.tryParse(packagePriceStr) ?? 0.0;
+  void _openDetails(int packageId) {
+    // نمرّر نفس الـ Cubit حتى ترى الورقة السفلية الاشتراك النشط
+    final cubit = context.read<PackagesCubit>();
 
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (modalContext) {
-      // 2️⃣ تمرير المتغيرات المحلية بدلاً من محاولة الوصول للـ context الداخلي
-      return BlocProvider.value(
-        value: packagesCubit,
-        child: PackageDetailsBottomSheet(
-          packageId: packageId,
-          packagePrice: packagePrice,
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => BlocProvider.value(
+        value: cubit,
+        child: PackageDetailsBottomSheet(packageId: packageId),
+      ),
+    );
+  }
+
+  void _showMessage(String message, {required bool isError}) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: isError
+              ? AppColors.errorColor
+              : AppColors.successColor,
         ),
       );
-    },
-  );
-}
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surfaceWhite,
-      appBar: AppBar(
-        title: Text(
-          'باقات الصيانة والخدمات',
-          style: TextStyles.Size18.withWeight(FontWeight.bold)
-              .withColor(AppColors.darkBlueBlack),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        elevation: 0,
-      ),
+      backgroundColor: AppColors.bgLight,
       body: BlocConsumer<PackagesCubit, PackagesState>(
+        listenWhen: (previous, current) =>
+            previous.errorMessage != current.errorMessage ||
+            previous.successMessage != current.successMessage,
         listener: (context, state) {
-          if (state is SubscribePackageSuccess) {
-            context.read<PackagesCubit>().emitFetchPackagesData();
+          if (state.successMessage != null) {
+            _showMessage(state.successMessage!, isError: false);
+            context.read<PackagesCubit>().clearMessages();
+          } else if (state.errorMessage != null &&
+              state.status == PackagesStatus.success) {
+            _showMessage(state.errorMessage!, isError: true);
+            context.read<PackagesCubit>().clearMessages();
           }
         },
         builder: (context, state) {
-          if (state is PackagesLoading || state is SubscribePackageLoading) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (state is PackagesError) {
-            return Center(
-              child: Text(
-                state.error,
-                style: TextStyles.Size15.withColor(Colors.red),
-              ),
-            );
-          } else if (state is PackagesLoadedSuccess) {
-            final activeUserPackage = state.activeUserPackage;
-            final availablePackages = state.availablePackages;
+          final cubit = context.read<PackagesCubit>();
 
-            return SingleChildScrollView(
-              padding: EdgeInsets.all(16.r),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 🟢 1. قسم اشتراك المستخدم الحالي
-                  Text(
-                    'اشتراكك الحالي',
-                    style: TextStyles.Size15.withWeight(FontWeight.bold)
-                        .withColor(AppColors.darkBlueBlack),
-                  ),
-                  SizedBox(height: 10.h),
-                  if (activeUserPackage != null)
-                    _buildActivePackageCard(context, activeUserPackage)
-                  else
-                    _buildNoActivePackageCard(),
-
-                  SizedBox(height: 24.h),
-                  const Divider(),
-                  SizedBox(height: 16.h),
-
-                  // 🔵 2. قائمة كافة الباقات المتاحة
-                  Text(
-                    'كافة الباقات والخدمات',
-                    style: TextStyles.Size15.withWeight(FontWeight.bold)
-                        .withColor(AppColors.darkBlueBlack),
-                  ),
-                  SizedBox(height: 10.h),
-                  if (availablePackages.isEmpty)
-                    const Center(child: Text('لا توجد باقات متاحة حالياً'))
-                  else
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: availablePackages.length,
-                      separatorBuilder: (context, index) => SizedBox(height: 12.h),
-                      itemBuilder: (context, index) {
-                        final package = availablePackages[index];
-                        return _buildPackageCard(context, package);
-                      },
-                    ),
-                ],
-              ),
-            );
-          }
-
-          return const Center(child: CircularProgressIndicator());
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _Header(state: state),
+              Expanded(child: _buildBody(context, state, cubit)),
+            ],
+          );
         },
       ),
     );
   }
 
-  /// 🟢 كارت الباقة المفعلة للمستخدم الحالي
-  Widget _buildActivePackageCard(BuildContext context, UserPackageModel userPackage) {
-    final package = userPackage.packageDetails;
-    if (package == null) return const SizedBox.shrink();
+  Widget _buildBody(
+    BuildContext context,
+    PackagesState state,
+    PackagesCubit cubit,
+  ) {
+    if (state.status == PackagesStatus.loading &&
+        state.availablePackages.isEmpty) {
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.primaryBlue),
+      );
+    }
 
-    return GestureDetector(
-      onTap: () => _showPackageDetails(context, package.id, package.price),
-      child: Container(
-        padding: EdgeInsets.all(16.r),
-        decoration: BoxDecoration(
-          color: Colors.green.withOpacity(0.03),
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: Colors.green, width: 1.5),
-          boxShadow: const [
-            BoxShadow(
-              color: AppColors.cardShadowColor,
-              blurRadius: 8,
-              offset: Offset(0, 3),
-            ),
-          ],
+    if (state.status == PackagesStatus.error &&
+        state.availablePackages.isEmpty) {
+      return _ErrorRetry(
+        message: state.errorMessage ?? 'تعذر جلب الباقات',
+        onRetry: cubit.emitFetchPackagesData,
+      );
+    }
+
+    final packages = state.availablePackages;
+
+    return RefreshIndicator(
+      color: AppColors.primaryBlue,
+      onRefresh: cubit.emitFetchPackagesData,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                  decoration: BoxDecoration(
-                    color: Colors.green,
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.check_circle_rounded, color: Colors.white, size: 14.r),
-                      SizedBox(width: 4.w),
-                      Text(
-                        'مفعلة ونشطة',
-                        style: TextStyles.Size10.withWeight(FontWeight.bold)
-                            .withColor(Colors.white),
-                      ),
-                    ],
-                  ),
-                ),
+        padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 28.h),
+        children: [
+          // 1. الاشتراك النشط أو دعوة لاختيار باقة
+          if (state.activeUserPackage != null)
+            ActiveSubscriptionCard(
+              userPackage: state.activeUserPackage!,
+              onTap: () {
+                final packageId = state.activeUserPackage!.packageId;
+                if (packageId > 0) _openDetails(packageId);
+              },
+            )
+          else
+            const _NoSubscriptionCard(),
+
+          SizedBox(height: 26.h),
+
+          // 2. الباقات المتاحة
+          Row(
+            children: [
+              Text(
+                'الباقات المتاحة',
+                style: TextStyles.Size18
+                    .withColor(AppColors.darkBlueBlack)
+                    .withWeight(FontWeight.bold),
+              ),
+              const Spacer(),
+              if (packages.isNotEmpty)
                 Text(
-                  '${package.price} ل.س',
-                  style: TextStyles.Size15.withWeight(FontWeight.bold)
-                      .withColor(Colors.green),
+                  '${packages.length} باقة',
+                  style: TextStyles.Size10.withColor(AppColors.coolGrey),
                 ),
-              ],
-            ),
-            SizedBox(height: 12.h),
-            Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(12.r),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
-                    shape: BoxShape.circle,
+            ],
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            state.hasActiveSubscription
+                ? 'يمكنك الاشتراك بباقة جديدة بعد انتهاء اشتراكك الحالي'
+                : 'اختر الباقة التي تناسب استخدامك',
+            style: TextStyles.Size10.withColor(AppColors.coolGrey),
+          ),
+          SizedBox(height: 16.h),
+
+          if (packages.isEmpty)
+            const _EmptyPackages()
+          else
+            ...List.generate(packages.length, (index) {
+              final package = packages[index];
+              return Padding(
+                padding: EdgeInsets.only(bottom: 14.h),
+                child: PackageCard(
+                  package: package,
+                  isCurrentSubscription: state.isCurrentSubscription(
+                    package.id,
                   ),
-                  child: Icon(
-                    Icons.workspace_premium_rounded,
-                    color: Colors.green,
-                    size: 28.r,
-                  ),
+                  // الباقات الأخرى تُقفل ما دام هناك اشتراك نشط
+                  isLocked: !state.canSubscribeTo(package) &&
+                      !state.isCurrentSubscription(package.id),
+                  lockedReason: state.blockedReasonFor(package),
+                  isSubscribing: state.subscribingPackageId == package.id,
+                  onTap: () => _openDetails(package.id),
+                  onSubscribe: state.canSubscribeTo(package)
+                      ? () => _confirmSubscribe(context, package)
+                      : null,
                 ),
-                SizedBox(width: 14.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        package.name,
-                        style: TextStyles.Size15.withWeight(FontWeight.bold)
-                            .withColor(AppColors.darkBlueBlack),
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        'تتضمن ${package.servicesCount} خدمات • صالحة لمدة ${package.validDays} يوم',
-                        style: TextStyles.Size10.withColor(AppColors.coolGrey),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(
-                  Icons.chevron_left_rounded,
-                  size: 20.r,
-                  color: Colors.green,
-                ),
-              ],
-            ),
-          ],
-        ),
+              );
+            }),
+        ],
       ),
     );
   }
 
-  /// ⚪ كارت في حالة عدم وجود باقة نشطة
-  Widget _buildNoActivePackageCard() {
+  /// الاشتراك يخصم من المحفظة، لذلك نؤكّد قبل التنفيذ
+  Future<void> _confirmSubscribe(
+    BuildContext context,
+    PackageModel package,
+  ) async {
+    final cubit = context.read<PackagesCubit>();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18.r),
+        ),
+        title: Text(
+          'تأكيد الاشتراك',
+          style: TextStyles.Size18
+              .withColor(AppColors.darkBlueBlack)
+              .withWeight(FontWeight.bold),
+        ),
+        content: Text(
+          'سيتم الاشتراك في «${package.name}» وخصم ${package.price} ل.س من محفظتك.\n'
+          'لا يمكنك الاشتراك بباقة أخرى قبل انتهاء هذه الباقة.',
+          style: TextStyles.Size15
+              .withColor(AppColors.darkBlueBlack)
+              .withHeight(1.6),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('تراجع'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryBlue,
+            ),
+            child: Text(
+              'تأكيد',
+              style: TextStyles.Size15.withColor(AppColors.surfaceWhite),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await cubit.emitSubscribeToPackage(packageId: package.id);
+    }
+  }
+}
+
+class _Header extends StatelessWidget {
+  final PackagesState state;
+
+  const _Header({required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    return GradientHeader(
+      padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 22.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'الباقات',
+                  style: TextStyles.Size24
+                      .withColor(AppColors.surfaceWhite)
+                      .withWeight(FontWeight.bold),
+                ),
+              ),
+              Icon(
+                Icons.workspace_premium_rounded,
+                color: AppColors.cyanAccent,
+                size: 26.r,
+              ),
+            ],
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            state.hasActiveSubscription
+                ? 'لديك اشتراك نشط'
+                : 'وفّر أكثر مع باقات الصيانة والغسيل',
+            style: TextStyles.Size15.withColor(
+              state.hasActiveSubscription
+                  ? AppColors.cyanAccent
+                  : AppColors.surfaceWhite.withOpacity(0.8),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NoSubscriptionCard extends StatelessWidget {
+  const _NoSubscriptionCard();
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(16.r),
+      padding: EdgeInsets.all(20.r),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.grey.shade300),
+        color: AppColors.surfaceWhite,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: AppColors.borderGrey),
       ),
       child: Row(
         children: [
-          Icon(Icons.info_outline, color: AppColors.coolGrey, size: 24.r),
-          SizedBox(width: 12.w),
+          Container(
+            width: 52.w,
+            height: 52.h,
+            decoration: BoxDecoration(
+              color: AppColors.lightBlueSurface,
+              borderRadius: BorderRadius.circular(16.r),
+            ),
+            child: Icon(
+              Icons.card_membership_outlined,
+              color: AppColors.primaryBlue,
+              size: 26.r,
+            ),
+          ),
+          SizedBox(width: 14.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'لا يوجد اشتراك نشط',
+                  style: TextStyles.Size15
+                      .withColor(AppColors.darkBlueBlack)
+                      .withWeight(FontWeight.bold),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  'اختر باقة من الأسفل للبدء',
+                  style: TextStyles.Size10
+                      .withColor(AppColors.coolGrey)
+                      .withHeight(1.5),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyPackages extends StatelessWidget {
+  const _EmptyPackages();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(32.r),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceWhite,
+        borderRadius: BorderRadius.circular(18.r),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.inventory_2_outlined,
+            size: 38.r,
+            color: AppColors.coolGrey,
+          ),
+          SizedBox(height: 12.h),
           Text(
-            'ليس لديك باقة مفعلة حالياً',
+            'لا توجد باقات متاحة حالياً',
             style: TextStyles.Size15.withColor(AppColors.coolGrey),
           ),
         ],
       ),
     );
   }
+}
 
-  /// 🔵 كارت الباقة العامة
-  Widget _buildPackageCard(BuildContext context, PackageModel package) {
-    return GestureDetector(
-      onTap: () => _showPackageDetails(context, package.id, package.price),
-      child: Container(
-        padding: EdgeInsets.all(16.r),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceWhite,
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: AppColors.borderGrey),
-          boxShadow: const [
-            BoxShadow(
-              color: AppColors.cardShadowColor,
-              blurRadius: 8,
-              offset: Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Row(
+class _ErrorRetry extends StatelessWidget {
+  final String message;
+  final Future<void> Function() onRetry;
+
+  const _ErrorRetry({required this.message, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(28.r),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              padding: EdgeInsets.all(12.r),
-              decoration: BoxDecoration(
-                color: AppColors.primaryBlue.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.card_membership_rounded,
-                color: AppColors.primaryBlue,
-                size: 28.r,
-              ),
+            Icon(
+              Icons.error_outline_rounded,
+              size: 46.r,
+              color: AppColors.errorColor,
             ),
-            SizedBox(width: 14.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    package.name,
-                    style: TextStyles.Size15.withWeight(FontWeight.bold)
-                        .withColor(AppColors.darkBlueBlack),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    'تتضمن ${package.servicesCount} خدمات • صالحة لمدة ${package.validDays} يوم',
-                    style: TextStyles.Size10.withColor(AppColors.coolGrey),
-                  ),
-                ],
-              ),
+            SizedBox(height: 12.h),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyles.Size15.withColor(AppColors.darkBlueBlack),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  '${package.price} ل.س',
-                  style: TextStyles.Size15.withWeight(FontWeight.bold)
-                      .withColor(AppColors.primaryBlue),
-                ),
-                SizedBox(height: 4.h),
-                Row(
-                  children: [
-                    Text(
-                      'التفاصيل',
-                      style: TextStyles.Size10.withColor(AppColors.coolGrey),
-                    ),
-                    Icon(
-                      Icons.chevron_left_rounded,
-                      size: 16.r,
-                      color: AppColors.coolGrey,
-                    ),
-                  ],
-                ),
-              ],
+            SizedBox(height: 16.h),
+            ElevatedButton(
+              onPressed: onRetry,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryBlue,
+              ),
+              child: Text(
+                'إعادة المحاولة',
+                style: TextStyles.Size15.withColor(AppColors.surfaceWhite),
+              ),
             ),
           ],
         ),
