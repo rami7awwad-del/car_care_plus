@@ -1,112 +1,181 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:car_care_plus/core/resources/app_color.dart';
 import 'package:car_care_plus/core/resources/text_style.dart';
+import 'package:car_care_plus/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:car_care_plus/features/auth/presentation/cubit/auth_state.dart';
+import 'package:car_care_plus/features/notifications/ui/widgets/notification_bell_button.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import 'home_balance_cards.dart';
+
+/// هيدر الصفحة الرئيسية: تحية باسم المستخدم، جرس الإشعارات، ومقبض القائمة
+/// الجانبية (الصورة الرمزية) — وبطاقتا الرصيد أسفله في الوضع الطولي.
+///
+/// الهيدر ثابت خارج منطقة التمرير، لذلك يبقى ارتفاعه محسوباً بدقّة: في الوضع
+/// العرضي تنتقل بطاقتا الرصيد إلى المحتوى القابل للتمرير ويبقى الهيدر سطراً
+/// واحداً فقط.
 class HomeHeaderWidget extends StatelessWidget {
-  const HomeHeaderWidget({super.key});
+  /// فتح القائمة الجانبية — الصورة الرمزية هي مقبض القائمة
+  final VoidCallback? onMenuPressed;
+
+  /// عرض بطاقتي الرصيد داخل الهيدر (الوضع الطولي فقط)
+  final bool showBalanceCards;
+
+  const HomeHeaderWidget({
+    super.key,
+    this.onMenuPressed,
+    this.showBalanceCards = true,
+  });
 
   @override
   Widget build(BuildContext context) {
+    // أعلى الهيدر داكن، فنطلب أيقونات شريط حالة فاتحة
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light.copyWith(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+      ),
+      child: _buildHeader(context),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
     return Container(
-      padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
       decoration: BoxDecoration(
-        gradient: AppColors.mainAppGradient,
+        gradient: AppColors.headerGradient,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(28.r),
           bottomRight: Radius.circular(28.r),
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // شريط الترحيب والبروفايل المصغر
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'أهلاً بك 👋',
-                    style: TextStyles.Size15.withColor(AppColors.cyanAccent),
-                  ),
-                  SizedBox(height: 2.h),
-                  Text(
-                    'اختر خدمة سيارتك',
-                    style: TextStyles.Size24.withWeight(FontWeight.bold).withColor(AppColors.surfaceWhite),
-                  ),
-                ],
-              ),
-              Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.cyanAccent, width: 2),
-                ),
-                child: CircleAvatar(
-                  radius: 22.r,
-                  backgroundColor: AppColors.royalBlue,
-                  child: Icon(Icons.person, color: AppColors.surfaceWhite, size: 24.sp),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 20.h),
-
-          // كرت عرض ترويجي (Promo Card)
-          Container(
-            padding: EdgeInsets.all(16.r),
-            decoration: BoxDecoration(
-              gradient: AppColors.cyanGlowGradient,
-              borderRadius: BorderRadius.circular(20.r),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.cyanAccent.withOpacity(0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                        decoration: BoxDecoration(
-                          color: AppColors.darkBlueBlack.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                        child: Text(
-                          'خصم خاص 20%',
-                          style: TextStyles.Size10.withWeight(FontWeight.bold).withColor(AppColors.surfaceWhite),
-                        ),
-                      ),
-                      SizedBox(height: 8.h),
-                      Text(
-                        'عناية كاملة بسيارتك',
-                        style: TextStyles.Size18.withWeight(FontWeight.bold).withColor(AppColors.darkBlueBlack),
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        'احجز باقة الغسيل والتلميع الشامل الآن',
-                        style: TextStyles.Size10.withColor(AppColors.darkBlueBlack.withOpacity(0.8)),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(
-                  Icons.directions_car_filled_rounded,
-                  size: 60.sp,
-                  color: AppColors.darkBlueBlack.withOpacity(0.85),
-                ),
-              ],
-            ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.darkBlueBlack.withOpacity(0.18),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
+      // التدرّج يمتد خلف شريط الحالة، بينما يبقى المحتوى داخل المنطقة الآمنة
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            20.w,
+            12.h,
+            20.w,
+            showBalanceCards ? 18.h : 14.h,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _HeaderGreetingRow(onMenuPressed: onMenuPressed),
+              if (showBalanceCards) ...[
+                SizedBox(height: 16.h),
+                const HomeBalanceCards(),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HeaderGreetingRow extends StatelessWidget {
+  final VoidCallback? onMenuPressed;
+
+  const _HeaderGreetingRow({required this.onMenuPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        _AvatarMenuButton(onPressed: onMenuPressed),
+        SizedBox(width: 12.w),
+        Expanded(
+          child: BlocBuilder<AuthCubit, AuthState>(
+            builder: (context, state) {
+              final user = state is AuthSuccess ? state.user : null;
+              final name = user?.name.trim();
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'أهلاً بك 👋',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyles.Size10.withColor(AppColors.cyanAccent),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    (name != null && name.isNotEmpty)
+                        ? name
+                        : 'اختر خدمة سيارتك',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyles.Size18
+                        .withWeight(FontWeight.bold)
+                        .withColor(AppColors.surfaceWhite),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+        SizedBox(width: 8.w),
+        const NotificationBellButton(),
+      ],
+    );
+  }
+}
+
+class _AvatarMenuButton extends StatelessWidget {
+  final VoidCallback? onPressed;
+
+  const _AvatarMenuButton({required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<AuthCubit, AuthState>(
+      builder: (context, state) {
+        final name = state is AuthSuccess ? state.user.name.trim() : '';
+        final initial =
+            name.isNotEmpty ? name.characters.first.toUpperCase() : null;
+
+        return InkWell(
+          onTap: onPressed,
+          customBorder: const CircleBorder(),
+          child: Container(
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.cyanAccent, width: 2),
+            ),
+            child: CircleAvatar(
+              radius: 21.r,
+              backgroundColor: AppColors.royalBlue,
+              child: initial != null
+                  ? Text(
+                      initial,
+                      style: TextStyles.Size18
+                          .withColor(AppColors.surfaceWhite)
+                          .withWeight(FontWeight.bold),
+                    )
+                  : Icon(
+                      Icons.person_rounded,
+                      color: AppColors.surfaceWhite,
+                      size: 22.r,
+                    ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

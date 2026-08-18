@@ -22,6 +22,10 @@ import 'package:car_care_plus/features/points/logic/points_cubit.dart';
 import 'package:car_care_plus/features/packages/data/repos/packages_repo.dart';
 import 'package:car_care_plus/features/packages/logic/packages_cubit.dart';
 
+// 👈 استيراد كلاسات الإشعارات
+import 'package:car_care_plus/features/notifications/data/repos/notifications_repo.dart';
+import 'package:car_care_plus/features/notifications/logic/notifications_cubit.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -41,6 +45,7 @@ class _MyAppState extends State<MyApp> {
   late final CarsRepo _carsRepo;
   late final PointsRepo _pointsRepo;
   late final PackagesRepo _packagesRepo; // 👈 2. تعريف متغيّر PackagesRepo
+  late final NotificationsRepo _notificationsRepo;
   late final ApiService _apiService;
 
   @override
@@ -59,6 +64,7 @@ class _MyAppState extends State<MyApp> {
     _carsRepo = CarsRepo(_apiService);
     _pointsRepo = PointsRepo(_apiService);
     _packagesRepo = PackagesRepo(_apiService); // 👈 3. إنشاء كائن PackagesRepo
+    _notificationsRepo = NotificationsRepo(_apiService);
 
     // 3️⃣ تهيئة الـ AppRouter
     _appRouter = AppRouter(
@@ -72,12 +78,23 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return ScreenUtilInit(
-      designSize: const Size(375, 812),
-      minTextAdapt: true,
-      splitScreenMode: true,
-      builder: (context, child) {
-        return MultiProvider(
+    // نبني MediaQuery فوق ScreenUtilInit حتى نعرف الاتجاه قبل تثبيت مقاس
+    // التصميم المرجعي. بمقاس طولي واحد ثابت كان كل `.h` ينكمش للنصف وكل `.w`
+    // يتضاعف عند تدوير الجهاز، فتتشوّه كل الشاشات في الوضع العرضي.
+    return MediaQuery.fromView(
+      view: View.of(context),
+      child: Builder(
+        builder: (context) {
+          final isLandscape =
+              MediaQuery.orientationOf(context) == Orientation.landscape;
+
+          return ScreenUtilInit(
+            designSize:
+                isLandscape ? const Size(812, 375) : const Size(375, 812),
+            minTextAdapt: true,
+            splitScreenMode: true,
+            builder: (context, child) {
+              return MultiProvider(
           providers: [
             // توفير ApiService لكل صفحات التطبيق والـ Router
             Provider<ApiService>.value(value: _apiService),
@@ -97,17 +114,41 @@ class _MyAppState extends State<MyApp> {
             BlocProvider<PackagesCubit>(
               create: (context) => PackagesCubit(_packagesRepo),
             ),
+
+            // 👈 5. الإشعارات على مستوى التطبيق: شارة العدد في الهيدر
+            // والقائمة في شاشة الإشعارات تشتركان في نفس الـ Cubit
+            BlocProvider<NotificationsCubit>(
+              create: (context) => NotificationsCubit(_notificationsRepo),
+            ),
           ],
-          child: MaterialApp(
-            debugShowCheckedModeBanner: false,
-            locale: _locale,
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            initialRoute: Routes.login,
-            onGenerateRoute: _appRouter.generateRoute,
-          ),
-        );
-      },
+                child: MaterialApp(
+                  debugShowCheckedModeBanner: false,
+                  locale: _locale,
+                  localizationsDelegates:
+                      AppLocalizations.localizationsDelegates,
+                  supportedLocales: AppLocalizations.supportedLocales,
+                  initialRoute: Routes.login,
+                  onGenerateRoute: _appRouter.generateRoute,
+                  // نحدّ من تكبير الخط النظامي: فوق 1.3 تبدأ البطاقات
+                  // والشرائط بالتجاوز، خصوصاً في الوضع العرضي
+                  builder: (context, child) {
+                    final mediaQuery = MediaQuery.of(context);
+                    return MediaQuery(
+                      data: mediaQuery.copyWith(
+                        textScaler: mediaQuery.textScaler.clamp(
+                          minScaleFactor: 1.0,
+                          maxScaleFactor: 1.3,
+                        ),
+                      ),
+                      child: child ?? const SizedBox.shrink(),
+                    );
+                  },
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

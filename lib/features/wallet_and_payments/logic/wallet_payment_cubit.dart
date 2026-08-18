@@ -1,8 +1,5 @@
-import 'package:car_care_plus/features/wallet_and_payments/data/models/payment_model.dart';
-import 'package:car_care_plus/features/wallet_and_payments/data/models/wallet_response_model.dart';
-import 'package:car_care_plus/features/wallet_and_payments/data/models/wallet_transaction_model.dart';
-import 'package:car_care_plus/features/wallet_and_payments/data/repos/wallet_payment_repo.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:car_care_plus/features/wallet_and_payments/data/repos/wallet_payment_repo.dart';
 import 'wallet_payment_state.dart';
 
 class WalletPaymentCubit extends Cubit<WalletPaymentState> {
@@ -10,39 +7,106 @@ class WalletPaymentCubit extends Cubit<WalletPaymentState> {
 
   WalletPaymentCubit(this._repo) : super(WalletPaymentInitialState());
 
-  /// جلب كافة البيانات الأساسية (المحفظة، المدفوعات، المعاملات)
+  static const int _perPage = 20;
+
+  bool _isFetching = false;
+
+  void _safeEmit(WalletPaymentState state) {
+    if (!isClosed) emit(state);
+  }
+
+  /// جلب الرصيد وأول صفحة من سجل الحركات معاً.
+  ///
+  /// يجب استدعاؤها عند كل عودة للشاشة: الرصيد يتغيّر كأثر جانبي لتأكيد حجز أو
+  /// إلغائه أو شراء باقة، ولا يوجد أي دفع أو اشتراك لحظي من الباك اند.
   Future<void> fetchWalletAndPaymentData({int? customerId}) async {
-    emit(WalletPaymentLoadingState());
+    if (_isFetching) return;
+    _isFetching = true;
+
+    _safeEmit(WalletPaymentLoadingState());
     try {
-      // تنفيذ الطلبات الثلاثة بالتوازي لسرعة الأداء
-      final results = await Future.wait([
-        _repo.getMyWallet(),
-        _repo.getPayments(),
-        _repo.getWalletTransactions(customerId: customerId),
-      ]);
+      // ننفّذ الطلبين بالتوازي مع الحفاظ على أنواعهما
+      final walletFuture = _repo.getMyWallet();
+      final ledgerFuture = _repo.getWalletTransactions(
+        customerId: customerId,
+        perPage: _perPage,
+      );
 
-      final walletData = results[0] as WalletData;
-      final paymentsList = results[1] as List<PaymentItemModel>;
-      final transactionsList = results[2] as List<WalletTransactionItemModel>;
+      final wallet = await walletFuture;
+      final ledger = await ledgerFuture;
 
-      emit(WalletPaymentSuccessState(
-        wallet: walletData,
-        payments: paymentsList,
-        transactions: transactionsList,
-      ));
-    } catch (e) {
-      emit(WalletPaymentErrorState(e.toString()));
+      _safeEmit(
+        WalletPaymentSuccessState(
+          wallet: wallet,
+          transactions: ledger.data,
+          pagination: ledger.pagination,
+        ),
+      );
+    } catch (error) {
+      _safeEmit(WalletPaymentErrorState(error.toString()));
+    } finally {
+      _isFetching = false;
     }
   }
 
-  /// جلب تفاصيل عملية دفع محددة
-  Future<void> fetchPaymentDetail(int paymentId) async {
-    emit(PaymentDetailLoadingState());
+  /// تحميل الصفحة التالية من السجل عند الوصول لنهاية القائمة
+  Future<void> loadMoreTransactions({int? customerId}) async {
+    final current = state;
+    if (current is! WalletPaymentSuccessState) return;
+    if (_isFetching || current.isLoadingMore || !current.hasMore) return;
+
+    _isFetching = true;
+    _safeEmit(current.copyWith(isLoadingMore: true));
+
     try {
-      final payment = await _repo.getPaymentDetail(paymentId);
-      emit(PaymentDetailSuccessState(payment));
-    } catch (e) {
-      emit(WalletPaymentErrorState(e.toString()));
+      final nextPage = (current.pagination?.currentPage ?? 1) + 1;
+      final ledger = await _repo.getWalletTransactions(
+        customerId: customerId,
+        page: nextPage,
+        perPage: _perPage,
+      );
+
+      // ندمج بالاعتماد على المعرّف حتى لا تتكرر الصفوف إذا تغيّر السجل بين الصفحات
+      final existingIds = current.transactions.map((e) => e.id).toSet();
+      final merged = [
+        ...current.transactions,
+        ...ledger.data.where((e) => !existingIds.contains(e.id)),
+      ];
+
+      _safeEmit(
+        current.copyWith(
+          transactions: merged,
+          pagination: ledger.pagination,
+          isLoadingMore: false,
+        ),
+      );
+    } catch (_) {
+      // فشل صفحة إضافية لا يجب أن يمسح ما هو معروض
+      _safeEmit(current.copyWith(isLoadingMore: false));
+    } finally {
+      _isFetching = false;
+    }
+  }
+
+  /// جلب الرصيد وحده دون سجل الحركات.
+  ///
+  /// مخصّص لبطاقة الرصيد المختصرة في الصفحة الرئيسية: هي تعرض الرقم فقط،
+  /// فلا داعي لتحميل صفحة السجل معه. تصل الحالة بـ `transactions` فارغة —
+  /// لذلك يجب ألا تُستخدم هذه الدالة على شاشة المحفظة نفسها.
+  Future<void> fetchWalletBalanceOnly() async {
+    if (_isFetching) return;
+    _isFetching = true;
+
+    _safeEmit(WalletPaymentLoadingState());
+    try {
+      final wallet = await _repo.getMyWallet();
+      _safeEmit(
+        WalletPaymentSuccessState(wallet: wallet, transactions: const []),
+      );
+    } catch (error) {
+      _safeEmit(WalletPaymentErrorState(error.toString()));
+    } finally {
+      _isFetching = false;
     }
   }
 }
