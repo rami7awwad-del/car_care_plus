@@ -17,14 +17,25 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
   }) async {
     try {
+      // مسح توكن الجلسة السابقة قبل أي محاولة دخول.
+      // بدون هذا السطر يبقى توكن المستخدم السابق فعّالاً إذا لم يُحفظ التوكن
+      // الجديد، فتُنفَّذ كل الطلبات التالية (ومنها جلب البروفايل) بهويته.
+      await SharedPrefHelper.deleteSecuredString(SharedPrefKeys.userToken);
+
       final user = await remoteDataSource.login(
         email: email,
         password: password,
       );
 
-      if (user.token != null && user.token!.isNotEmpty) {
-      await SharedPrefHelper.setSecuredString(SharedPrefKeys.userToken, user.token!);
-    }
+      final token = user.token;
+      if (token == null || token.isEmpty) {
+        // نفشل بوضوح بدل المتابعة بلا توكن أو بتوكن مستخدم آخر
+        return const Left(
+          'تعذر الحصول على رمز الدخول من السيرفر، يرجى المحاولة مرة أخرى',
+        );
+      }
+
+      await SharedPrefHelper.setSecuredString(SharedPrefKeys.userToken, token);
 
       return Right(user);
     } catch (e) {
@@ -42,6 +53,8 @@ class AuthRepositoryImpl implements AuthRepository {
     bool isActive = true,
   }) async {
     try {
+      // حساب جديد يجب ألا يرث جلسة المستخدم السابق
+      await SharedPrefHelper.deleteSecuredString(SharedPrefKeys.userToken);
       final user = await remoteDataSource.registerCustomer(
         name: name,
         email: email,
@@ -50,6 +63,7 @@ class AuthRepositoryImpl implements AuthRepository {
         passwordConfirmation: passwordConfirmation,
         isActive: isActive,
       );
+      await _persistTokenIfPresent(user);
       return Right(user);
     } catch (e) {
       return Left(e.toString().replaceAll('Exception: ', ''));
@@ -71,6 +85,8 @@ class AuthRepositoryImpl implements AuthRepository {
     bool isActive = false,
   }) async {
     try {
+      // حساب جديد يجب ألا يرث جلسة المستخدم السابق
+      await SharedPrefHelper.deleteSecuredString(SharedPrefKeys.userToken);
       final user = await remoteDataSource.registerCompany(
         name: name,
         email: email,
@@ -84,6 +100,7 @@ class AuthRepositoryImpl implements AuthRepository {
         companyAddress: companyAddress,
         isActive: isActive,
       );
+      await _persistTokenIfPresent(user);
       return Right(user);
     } catch (e) {
       return Left(e.toString().replaceAll('Exception: ', ''));
@@ -151,4 +168,13 @@ Future<Either<String, UserModel>> updateProfile({
   }
 }
 
+
+  /// يحفظ التوكن إن أرسله السيرفر. التسجيل قد لا يعيد توكناً (حساب شركة بانتظار
+  /// الموافقة مثلاً)، وعندها يبقى المستخدم بلا جلسة بدل أن يرث جلسة غيره.
+  Future<void> _persistTokenIfPresent(UserModel user) async {
+    final token = user.token;
+    if (token != null && token.isNotEmpty) {
+      await SharedPrefHelper.setSecuredString(SharedPrefKeys.userToken, token);
+    }
+  }
 }

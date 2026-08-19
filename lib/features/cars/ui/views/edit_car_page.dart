@@ -162,7 +162,7 @@ class _EditCarPageState extends State<EditCarPage> {
                                 : null,
                           ),
                           Positioned(
-                            bottom: 8.h,
+                            bottom: 30.h,
                             right: 8.w,
                             child: Container(
                               padding: EdgeInsets.all(8.r),

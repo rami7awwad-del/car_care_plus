@@ -54,6 +54,9 @@ static const Color lightGoldSurface = Color(0xFFFFF8E6);
   colors: [primaryBlue, Color(0xFF0052B4)],
 );
 
+// لون قمة الهيدر — يستخدمه شريط التطبيق العلوي حتى يتّصل مع التدرّج بلا فاصل
+static const Color headerTop = Color(0xFF0A0E17);
+
 static const LinearGradient headerGradient = LinearGradient(
   begin: Alignment.topCenter,
   end: Alignment.bottomCenter,

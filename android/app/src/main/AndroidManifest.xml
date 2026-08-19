@@ -36,4 +36,24 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
+
+    <!-- Android 11+ يخفي التطبيقات الأخرى افتراضياً، وبدون هذا القسم يعيد
+         canLaunchUrl القيمة false للاتصال وفتح الخرائط -->
+    <queries>
+        <!-- الاتصال برقم الفرع -->
+        <intent>
+            <action android:name="android.intent.action.DIAL" />
+            <data android:scheme="tel" />
+        </intent>
+        <!-- فتح موقع الفرع في تطبيق الخرائط -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="geo" />
+        </intent>
+        <!-- الاحتياط عبر المتصفح إن لم يوجد تطبيق خرائط -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+    </queries>
 </manifest>

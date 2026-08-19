@@ -194,6 +194,7 @@ class _BookingSetupViewState extends State<BookingSetupView> {
       backgroundColor: Colors.transparent,
       builder: (sheetContext) => PackageSelectionBottomSheet(
         packages: packages,
+        carCount: widget.carIds.length,
         onSelect: (id) {
           Navigator.pop(sheetContext);
           setState(() => _selectedUserPackageId = id);
@@ -562,24 +563,23 @@ class _BookingSetupViewState extends State<BookingSetupView> {
         bool hasActivePackage = false;
         String? activePackageName;
 
-        if (packagesState is PackagesLoadedSuccess) {
-          final activeUserPackage = packagesState.activeUserPackage;
+        // الاشتراك النشط يبقى في الحالة دائماً الآن، فلا يختفي أثناء
+        // تحميل تفاصيل باقة أو تنفيذ اشتراك
+        final activeUserPackage = packagesState.activeUserPackage;
+        if (activeUserPackage != null) {
+          hasActivePackage = true;
+          activePackageName = activeUserPackage.packageDetails?.name;
 
-          if (activeUserPackage != null) {
-            hasActivePackage = true;
-            activePackageName = activeUserPackage.packageDetails?.name;
-
-            // ضبط المعرف المختار تلقائياً للباقة المفعلة
-            if (_selectedUserPackageId == null) {
-              _selectedUserPackageId = activeUserPackage.packageDetails?.id;
-            }
-          }
+          // ⚠️ يجب إرسال معرّف *الاشتراك* (user_package) لا معرّف الخطة
+          // (package). كان يُرسل معرّف الخطة فيرفضه السيرفر بـ 422.
+          _selectedUserPackageId ??= activeUserPackage.id;
         }
 
         return PaymentMethodSelector(
           selectedMethod: _paymentMethod,
           pointsBalance: pointsBalance,
-          hasActivePackage: hasActivePackage,
+          // حجوزات الصيانة نقدية فقط، والباك اند يرفض الدفع بالباقة فيها
+          hasActivePackage: hasActivePackage && !_isMaintenance,
           activePackageName: activePackageName,
           onMethodChanged: (method) {
             setState(() {

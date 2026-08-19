@@ -12,7 +12,10 @@ import '../widgets/home_header_widget.dart';
 import '../widgets/services_list_widget.dart';
 
 class HomeView extends StatelessWidget {
-  const HomeView({super.key});
+  /// يُمرَّر من التخطيط الرئيسي لفتح القائمة الجانبية من الصورة الرمزية
+  final VoidCallback? onMenuPressed;
+
+  const HomeView({super.key, this.onMenuPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +75,7 @@ class HomeView extends StatelessWidget {
                       backgroundColor: const Color(0xFFF8FAFC),
                       expandedHeight: 280.h,
                       flexibleSpace: FlexibleSpaceBar(
-                        background: const HomeHeaderWidget(),
+                        background: HomeHeaderWidget(onMenuPressed: onMenuPressed),
                         collapseMode: CollapseMode.pin,
                       ),
                     ),

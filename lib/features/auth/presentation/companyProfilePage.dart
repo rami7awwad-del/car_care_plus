@@ -5,6 +5,9 @@ import 'package:car_care_plus/core/widgets/gradient_header.dart';
 import 'package:car_care_plus/features/auth/data/user_model.dart';
 import 'package:car_care_plus/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:car_care_plus/features/auth/presentation/cubit/auth_state.dart';
+import 'package:car_care_plus/features/notifications/logic/notifications_cubit.dart';
+import 'package:car_care_plus/features/notifications/logic/notifications_state.dart';
+import 'package:car_care_plus/features/notifications/ui/views/notifications_view.dart';
 import 'package:car_care_plus/features/points/logic/points_cubit.dart';
 import 'package:car_care_plus/features/points/logic/points_state.dart';
 import 'package:car_care_plus/features/wallet_and_payments/ui/screens/wallet_screen.dart';
@@ -46,6 +49,8 @@ class _CompanyProfilePageState extends State<CompanyProfilePage> {
           TextButton(
             onPressed: () {
               Navigator.pop(dialogContext);
+              // تفريغ شارة الإشعارات وقائمتها وإيقاف الاستطلاع قبل الخروج
+              context.read<NotificationsCubit>().clear();
               context.read<AuthCubit>().logout();
             },
             child: const Text('خروج', style: TextStyle(color: Colors.red)),
@@ -328,6 +333,26 @@ class _CompanyProfilePageState extends State<CompanyProfilePage> {
                         ),
                         SizedBox(height: 20.h),
 
+                        // مدخل الإشعارات
+                        BlocBuilder<NotificationsCubit, NotificationsState>(
+                          buildWhen: (previous, current) =>
+                              previous.unreadCount != current.unreadCount,
+                          builder: (context, notificationsState) {
+                            return _CompanyMenuTile(
+                              icon: Icons.notifications_rounded,
+                              label: 'الإشعارات',
+                              badgeCount: notificationsState.unreadCount,
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const NotificationsView(),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        SizedBox(height: 20.h),
+
                         // زر تسجيل الخروج
                         InkWell(
                           onTap: () => _showLogoutDialog(context),
@@ -545,6 +570,84 @@ class _PointsCard extends StatelessWidget {
             },
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// عنصر قائمة قابل للنقر بنفس شكل بطاقات الشركة، مع شارة عدد اختيارية
+class _CompanyMenuTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final int badgeCount;
+
+  const _CompanyMenuTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.badgeCount = 0,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18.r),
+      child: Container(
+        padding: EdgeInsets.all(16.r),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceWhite,
+          borderRadius: BorderRadius.circular(18.r),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.darkBlueBlack.withOpacity(0.05),
+              blurRadius: 14.r,
+              offset: Offset(0, 5.h),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 46.w,
+              height: 46.h,
+              decoration: BoxDecoration(
+                color: AppColors.lightBlueSurface,
+                borderRadius: BorderRadius.circular(14.r),
+              ),
+              child: Icon(icon, color: AppColors.primaryBlue, size: 24.r),
+            ),
+            SizedBox(width: 14.w),
+            Text(
+              label,
+              style: TextStyles.Size15
+                  .withColor(AppColors.darkBlueBlack)
+                  .withWeight(FontWeight.w600),
+            ),
+            const Spacer(),
+            if (badgeCount > 0)
+              Container(
+                margin: EdgeInsets.only(left: 8.w),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                decoration: BoxDecoration(
+                  color: AppColors.errorColor,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Text(
+                  badgeCount > 99 ? '+99' : '$badgeCount',
+                  style: TextStyles.Size10
+                      .withColor(AppColors.surfaceWhite)
+                      .withWeight(FontWeight.bold),
+                ),
+              ),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 16.r,
+              color: AppColors.coolGrey,
+            ),
+          ],
+        ),
       ),
     );
   }

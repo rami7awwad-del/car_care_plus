@@ -144,3 +144,7 @@ class BranchModel {
     );
   }
 }
+/*
+
+I want to integrate the notifications using the project's existing system. I have included everything you need in a file named `notivication.md` (located within the project files), featuring a clean UI placed in an appropriate location.
+*/

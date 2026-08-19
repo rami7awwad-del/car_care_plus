@@ -5,10 +5,13 @@ import 'package:car_care_plus/features/auth/presentation/pending_approval_page.d
 import 'package:car_care_plus/features/auth/presentation/register_page.dart';
 import 'package:car_care_plus/features/auth/presentation/resetPasswordPage.dart';
 import 'package:car_care_plus/features/auth/presentation/welcome_page.dart';
+import 'package:car_care_plus/features/ai_chat/ui/views/ai_chat_view.dart';
 import 'package:car_care_plus/features/cars/data/models/car_model.dart';
 import 'package:car_care_plus/features/cars/ui/views/edit_car_page.dart';
 import 'package:car_care_plus/features/main_layout/company_main_layout.dart'; // 👈 استيراد واجهة الشركات الجديدة
+import 'package:car_care_plus/features/branches/ui/views/branches_view.dart';
 import 'package:car_care_plus/features/main_layout/main_layout.dart';
+import 'package:car_care_plus/features/notifications/ui/views/notifications_view.dart';
 import 'package:car_care_plus/features/wallet_and_payments/data/repos/wallet_payment_repo.dart';
 import 'package:car_care_plus/features/wallet_and_payments/ui/screens/payment_details_screen.dart';
 import 'package:flutter/material.dart';
@@ -25,12 +28,13 @@ class Routes {
   static const String paymentDetails = '/paymentDetails';
   static const String pendingApproval = '/pendingApproval';
   static const String companyMainLayout = '/companyMainLayout'; // 👈 مسار واجهة الشركات
+  static const String notifications = '/notifications'; // 👈 مسار شاشة الإشعارات
+  static const String branches = '/branches'; // 👈 مسار شاشة الفروع
+  static const String aiChat = '/aiChat'; // 👈 مسار شاشة المساعد الذكي
 }
 
 class AppRouter {
-  final Function(Locale)? onLanguageChanged;
-
-  AppRouter({this.onLanguageChanged});
+  AppRouter();
 
   Route<dynamic>? generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -69,16 +73,36 @@ class AppRouter {
         );
 
       // 🆕 مسار تفاصيل الدفع
-      case Routes.paymentDetails:
-        final paymentId = settings.arguments as int;
+      // case Routes.paymentDetails:
+      //   final paymentId = settings.arguments as int;
+      //   return MaterialPageRoute(
+      //     builder: (context) {
+      //       final apiService = context.read<ApiService>();
+      //       return PaymentDetailsScreen(
+      //         paymentId: paymentId,
+      //         repo: WalletPaymentRepo(apiService),
+      //       );
+      //     },
+      //   );
+
+      // 🆕 مسار شاشة الفروع
+      case Routes.branches:
+        return MaterialPageRoute(builder: (_) => const BranchesView());
+
+      // 🆕 مسار شاشة الإشعارات
+      // NotificationsCubit مُوفَّر فوق الـ MaterialApp لذا الشاشة تصل إليه مباشرة
+      case Routes.notifications:
         return MaterialPageRoute(
-          builder: (context) {
-            final apiService = context.read<ApiService>();
-            return PaymentDetailsScreen(
-              paymentId: paymentId,
-              repo: WalletPaymentRepo(apiService),
-            );
-          },
+          builder: (_) => const NotificationsView(),
+        );
+
+      // 🆕 مسار شاشة المساعد الذكي
+      // AiChatCubit مُوفَّر فوق الـ MaterialApp حتى لا تضيع المحادثة عند
+      // مغادرة الشاشة والعودة إليها — فالسيرفر لا يحتفظ بأي جلسة
+      case Routes.aiChat:
+        final orderId = settings.arguments as int?;
+        return MaterialPageRoute(
+          builder: (_) => AiChatView(orderId: orderId),
         );
 
       // 🆕 مسار شاشة انتظار موافقة الشركة

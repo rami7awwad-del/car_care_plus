@@ -33,10 +33,10 @@ class ServiceDetailsView extends StatefulWidget {
 }
 
 class _ServiceDetailsViewState extends State<ServiceDetailsView> {
-  // السيارة المحددة من بيانات السيرفر Real Data
+  // السيارة المحددة من بيانات السيرفر
   CarModel? selectedCar;
 
-  // معرفات المواد المحددة Real Data
+  // معرفات المواد المحددة
   final List<int> selectedMaterialIds = [];
 
   @override
@@ -64,53 +64,89 @@ class _ServiceDetailsViewState extends State<ServiceDetailsView> {
         ),
       ],
       child: Scaffold(
-        backgroundColor: const Color(0xFFF8FAFC),
+        backgroundColor: AppColors.bgLight,
         body: BlocBuilder<ServiceDetailsCubit, ServiceDetailsState>(
           builder: (context, state) {
             if (state is ServiceDetailsLoadingState) {
-              return const Center(
-                child: CircularProgressIndicator(color: AppColors.primaryBlue),
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 48.r,
+                      height: 48.r,
+                      child: const CircularProgressIndicator(
+                        color: AppColors.primaryBlue,
+                        strokeWidth: 3.5,
+                      ),
+                    ),
+                    SizedBox(height: 16.h),
+                    Text(
+                      'جاري تحضير تفاصيل الخدمة...',
+                      style: TextStyles.Size15.withColor(AppColors.coolGrey),
+                    ),
+                  ],
+                ),
               );
             }
 
             if (state is ServiceDetailsErrorState) {
               return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.error_outline_rounded,
-                      color: AppColors.errorColor,
-                      size: 48.sp,
-                    ),
-                    SizedBox(height: 12.h),
-                    Text(
-                      state.message,
-                      style: TextStyles.Size15.withColor(
-                        AppColors.darkBlueBlack,
-                      ),
-                    ),
-                    SizedBox(height: 16.h),
-                    ElevatedButton(
-                      onPressed: () {
-                        context.read<ServiceDetailsCubit>().getServiceDetails(
-                          widget.serviceId,
-                        );
-                        context.read<SubServiceCubit>().fetchSubServices(
-                          widget.serviceId,
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryBlue,
-                      ),
-                      child: Text(
-                        'إعادة المحاولة',
-                        style: TextStyles.Size15.withColor(
-                          AppColors.surfaceWhite,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24.w),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(20.r),
+                        decoration: BoxDecoration(
+                          color: AppColors.errorColor.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.error_outline_rounded,
+                          color: AppColors.errorColor,
+                          size: 48.sp,
                         ),
                       ),
-                    ),
-                  ],
+                      SizedBox(height: 16.h),
+                      Text(
+                        state.message,
+                        textAlign: TextAlign.center,
+                        style: TextStyles.Size15.withColor(
+                          AppColors.darkBlueBlack,
+                        ),
+                      ),
+                      SizedBox(height: 20.h),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          context.read<ServiceDetailsCubit>().getServiceDetails(
+                                widget.serviceId,
+                              );
+                          context.read<SubServiceCubit>().fetchSubServices(
+                                widget.serviceId,
+                              );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryBlue,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 28.w,
+                            vertical: 12.h,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16.r),
+                          ),
+                          elevation: 0,
+                        ),
+                        icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+                        label: Text(
+                          'إعادة المحاولة',
+                          style: TextStyles.Size15.withWeight(FontWeight.bold)
+                              .withColor(AppColors.surfaceWhite),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             }
@@ -124,14 +160,23 @@ class _ServiceDetailsViewState extends State<ServiceDetailsView> {
                     child: CustomScrollView(
                       physics: const BouncingScrollPhysics(),
                       slivers: [
+                        // ==================== SliverAppBar عصري وبدون أي صور ====================
                         SliverAppBar(
-                          expandedHeight: 250.h,
+                          expandedHeight: 180.h,
                           pinned: true,
-                          backgroundColor: AppColors.surfaceWhite,
+                          elevation: 0,
+                          backgroundColor: AppColors.darkBlueBlack,
                           leading: Padding(
                             padding: EdgeInsets.all(8.r),
-                            child: CircleAvatar(
-                              backgroundColor: Colors.black26,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.12),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.2),
+                                  width: 1,
+                                ),
+                              ),
                               child: IconButton(
                                 icon: const Icon(
                                   Icons.arrow_back_ios_new_rounded,
@@ -143,10 +188,90 @@ class _ServiceDetailsViewState extends State<ServiceDetailsView> {
                             ),
                           ),
                           flexibleSpace: FlexibleSpaceBar(
-                            background: Image.asset(
-                              'assets/images/logo.png',
-                              height: 70.h,
-                              width: 200.w,
+                            background: Container(
+                              decoration: const BoxDecoration(
+                                gradient: AppColors.headerGradient,
+                              ),
+                              child: Stack(
+                                children: [
+                                  // عناصر جمالية خلفية
+                                  Positioned(
+                                    top: -40.h,
+                                    right: -30.w,
+                                    child: Container(
+                                      width: 140.r,
+                                      height: 140.r,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: AppColors.cyanAccent.withOpacity(0.08),
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    bottom: 40.h,
+                                    left: -20.w,
+                                    child: Container(
+                                      width: 100.r,
+                                      height: 100.r,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: AppColors.primaryBlue.withOpacity(0.15),
+                                      ),
+                                    ),
+                                  ),
+                                  // كبسولة العنوان الرئيسية
+                                  Align(
+                                    alignment: Alignment.center,
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        SizedBox(height: 20.h),
+                                        Container(
+                                          padding: EdgeInsets.all(14.r),
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            gradient: AppColors.buttonGradient,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: AppColors.primaryBlue.withOpacity(0.4),
+                                                blurRadius: 20,
+                                                offset: const Offset(0, 6),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Icon(
+                                            Icons.auto_awesome_rounded,
+                                            color: AppColors.surfaceWhite,
+                                            size: 30.sp,
+                                          ),
+                                        ),
+                                        SizedBox(height: 10.h),
+                                        Text(
+                                          service.name,
+                                          style: TextStyles.Size24
+                                              .withWeight(FontWeight.bold)
+                                              .withColor(AppColors.surfaceWhite),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  // انحناء أسفل الهيدر
+                                  Positioned(
+                                    bottom: 0,
+                                    left: 0,
+                                    right: 0,
+                                    child: Container(
+                                      height: 20.h,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.bgLight,
+                                        borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(24.r),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -154,27 +279,24 @@ class _ServiceDetailsViewState extends State<ServiceDetailsView> {
                         // 1. معلومات الخدمة
                         SliverToBoxAdapter(
                           child: Padding(
-                            padding: EdgeInsets.all(20.r),
+                            padding: EdgeInsets.symmetric(horizontal: 20.w),
                             child: ServiceInfoSection(service: service),
                           ),
                         ),
 
-                        // 2. اختيار السيارة من قاعدة البيانات
+                        // 2. اختيار السيارة
                         SliverToBoxAdapter(
                           child: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 20.w),
+                            padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  'اختر السيارة',
-                                  style: TextStyles.Size18.withWeight(
-                                    FontWeight.bold,
-                                  ).withColor(AppColors.darkBlueBlack),
+                                _buildSectionHeader(
+                                  title: 'اختيار السيارة',
+                                  icon: Icons.directions_car_filled_rounded,
                                 ),
-                                SizedBox(height: 10.h),
+                                SizedBox(height: 12.h),
                                 _buildCarSelectionTile(),
-                                SizedBox(height: 20.h),
                               ],
                             ),
                           ),
@@ -183,40 +305,39 @@ class _ServiceDetailsViewState extends State<ServiceDetailsView> {
                         // 3. الخدمات الفرعية
                         SliverToBoxAdapter(
                           child: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 20.w),
+                            padding: EdgeInsets.fromLTRB(20.w, 24.h, 20.w, 0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  'الخدمات الفرعية والإضافات',
-                                  style: TextStyles.Size18.withWeight(
-                                    FontWeight.bold,
-                                  ).withColor(AppColors.darkBlueBlack),
+                                _buildSectionHeader(
+                                  title: 'الخدمات الفرعية والإضافات',
+                                  icon: Icons.tune_rounded,
                                 ),
                                 SizedBox(height: 12.h),
                                 _buildSubServicesSection(),
-                                SizedBox(height: 20.h),
                               ],
                             ),
                           ),
                         ),
 
-                        // 4. المواد والقطع المضافة من قاعدة البيانات
+                        // 4. المواد والقطع المضافة
                         SliverToBoxAdapter(
                           child: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 20.w),
+                            padding: EdgeInsets.fromLTRB(
+                              20.w,
+                              24.h,
+                              20.w,
+                              28.h,
+                            ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  'المواد والقطع المضافة',
-                                  style: TextStyles.Size18.withWeight(
-                                    FontWeight.bold,
-                                  ).withColor(AppColors.darkBlueBlack),
+                                _buildSectionHeader(
+                                  title: 'المواد والقطع المضافة',
+                                  icon: Icons.widgets_rounded,
                                 ),
                                 SizedBox(height: 12.h),
                                 _buildMaterialsSection(),
-                                SizedBox(height: 24.h),
                               ],
                             ),
                           ),
@@ -225,7 +346,7 @@ class _ServiceDetailsViewState extends State<ServiceDetailsView> {
                     ),
                   ),
 
-                  // الشريط السفلي وتجميع التكلفة النهائية
+                  // ==================== الشريط السفلي لحساب التكلفة ====================
                   BlocBuilder<SubServiceCubit, SubServiceState>(
                     builder: (context, subState) {
                       final subCubit = context.read<SubServiceCubit>();
@@ -243,64 +364,89 @@ class _ServiceDetailsViewState extends State<ServiceDetailsView> {
                       double finalPrice =
                           service.basePrice + subServicesPrice + materialsPrice;
 
-                      return BookingBottomBar(
-                        price: finalPrice,
-                        discountPrice: service.vipExtraPrice != null
-                            ? (service.vipExtraPrice! +
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceWhite,
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(24.r),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.darkBlueBlack.withOpacity(0.08),
+                              blurRadius: 20,
+                              offset: const Offset(0, -6),
+                            ),
+                          ],
+                        ),
+                        child: BookingBottomBar(
+                          price: finalPrice,
+                          discountPrice: service.vipExtraPrice != null
+                              ? (service.vipExtraPrice! +
                                   subServicesPrice +
                                   materialsPrice)
-                            : null,
-                        onBookingPressed: () {
-                          // 1. التحقق من اختيار السيارة
-                          if (selectedCar == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('يرجى تحديد السيارة أولاً'),
-                                backgroundColor: AppColors.errorColor,
-                              ),
-                            );
-                            return;
-                          }
+                              : null,
+                          onBookingPressed: () {
+                            if (selectedCar == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.info_outline_rounded,
+                                        color: Colors.white,
+                                      ),
+                                      SizedBox(width: 8.w),
+                                      const Text('يرجى تحديد السيارة أولاً'),
+                                    ],
+                                  ),
+                                  backgroundColor: AppColors.errorColor,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12.r),
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
 
-                          // 2. تجهيز معرّفات الخدمات الفرعية المحددة
-                          final selectedSubServiceIds = subCubit
-                              .selectedSubServices
-                              .map((e) => e.id)
-                              .toList();
+                            final selectedSubServiceIds = subCubit
+                                .selectedSubServices
+                                .map((e) => e.id)
+                                .toList();
 
-                          // 3. تجهيز قائمة المواد المحددة بالصيغة المطلوبة للباك إند
-                          final selectedMaterials = selectedMaterialIds.map((
-                            id,
-                          ) {
-                            return {
-                              'material_id': id,
-                              'quantity': 1, // الكمية الافتراضية
-                            };
-                          }).toList();
+                            final selectedMaterials = selectedMaterialIds.map((
+                              id,
+                            ) {
+                              return {
+                                'material_id': id,
+                                'quantity': 1,
+                              };
+                            }).toList();
 
-                          // 4. الانتقال إلى شاشة الحجز وتوفير الـ BookingCubit عبر BlocProvider
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => BlocProvider(
-                                create: (context) =>
-                                    BookingCubit(BookingRepo(apiService)),
-                                child: BookingSetupView(
-                                  serviceId: widget.serviceId,
-                                  carIds: [selectedCar!.id],
-                                  categoryName: service.category?.name,
-                                  subServiceIds:
-                                      selectedSubServiceIds.isNotEmpty
-                                      ? selectedSubServiceIds
-                                      : null,
-                                  materials: selectedMaterials.isNotEmpty
-                                      ? selectedMaterials
-                                      : null,
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => BlocProvider(
+                                  create: (context) => BookingCubit(
+                                    BookingRepo(apiService),
+                                  ),
+                                  child: BookingSetupView(
+                                    serviceId: widget.serviceId,
+                                    carIds: [selectedCar!.id],
+                                    categoryName: service.category?.name,
+                                    subServiceIds:
+                                        selectedSubServiceIds.isNotEmpty
+                                            ? selectedSubServiceIds
+                                            : null,
+                                    materials: selectedMaterials.isNotEmpty
+                                        ? selectedMaterials
+                                        : null,
+                                  ),
                                 ),
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       );
                     },
                   ),
@@ -315,104 +461,176 @@ class _ServiceDetailsViewState extends State<ServiceDetailsView> {
     );
   }
 
-  /// ويدجيت الزر التفاعلي لاختيار السيارة
-  Widget _buildCarSelectionTile() {
-    return InkWell(
-      onTap: () => _showCarSelectionSheet(context),
-      borderRadius: BorderRadius.circular(12.r),
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(
-            color: selectedCar != null
-                ? AppColors.primaryBlue
-                : Colors.grey.shade300,
-            width: 1.5,
+  /// رأس القسم المميز بأيقونة وكبسولة نيون
+  Widget _buildSectionHeader({
+    required String title,
+    required IconData icon,
+  }) {
+    return Row(
+      children: [
+        Container(
+          padding: EdgeInsets.all(8.r),
+          decoration: BoxDecoration(
+            color: AppColors.primaryBlue.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(10.r),
+          ),
+          child: Icon(
+            icon,
+            color: AppColors.primaryBlue,
+            size: 20.r,
           ),
         ),
-        child: Row(
-          children: [
-            Icon(
-              Icons.directions_car_rounded,
-              color: selectedCar != null ? AppColors.primaryBlue : Colors.grey,
-              size: 24.sp,
+        SizedBox(width: 10.w),
+        Text(
+          title,
+          style: TextStyles.Size18.withWeight(FontWeight.bold)
+              .withColor(AppColors.darkBlueBlack),
+        ),
+      ],
+    );
+  }
+
+  /// زر بطاقة اختيار السيارة
+  Widget _buildCarSelectionTile() {
+    final hasSelectedCar = selectedCar != null;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _showCarSelectionSheet(context),
+        borderRadius: BorderRadius.circular(18.r),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceWhite,
+            borderRadius: BorderRadius.circular(18.r),
+            border: Border.all(
+              color: hasSelectedCar
+                  ? AppColors.primaryBlue
+                  : AppColors.borderGrey,
+              width: hasSelectedCar ? 1.8 : 1.0,
             ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    selectedCar != null
-                        ? '${selectedCar!.model} (${selectedCar!.year})'
-                        : 'اضغط لاختيار السيارة من الكاراج',
-                    style: TextStyles.Size15.withWeight(
-                      FontWeight.bold,
-                    ).withColor(AppColors.darkBlueBlack),
-                  ),
-                  if (selectedCar != null) ...[
-                    SizedBox(height: 2.h),
-                    Text(
-                      'رقم اللوحة: ${selectedCar!.plateNumber}',
-                      style: TextStyles.Size10.withColor(Colors.grey[600]!),
-                    ),
-                  ],
-                ],
+            boxShadow: [
+              BoxShadow(
+                color: hasSelectedCar
+                    ? AppColors.primaryBlue.withOpacity(0.12)
+                    : AppColors.cardShadowColor,
+                blurRadius: 14,
+                offset: const Offset(0, 4),
               ),
-            ),
-            Icon(
-              Icons.keyboard_arrow_down_rounded,
-              color: Colors.grey[600],
-              size: 24.sp,
-            ),
-          ],
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(12.r),
+                decoration: BoxDecoration(
+                  color: hasSelectedCar
+                      ? AppColors.primaryBlue.withOpacity(0.1)
+                      : AppColors.bgLight,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.directions_car_filled_rounded,
+                  color: hasSelectedCar
+                      ? AppColors.primaryBlue
+                      : AppColors.coolGrey,
+                  size: 24.sp,
+                ),
+              ),
+              SizedBox(width: 14.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      hasSelectedCar
+                          ? '${selectedCar!.model} (${selectedCar!.year})'
+                          : 'اضغط لاختيار السيارة من الكاراج',
+                      style: TextStyles.Size15.withWeight(
+                        FontWeight.bold,
+                      ).withColor(
+                        hasSelectedCar
+                            ? AppColors.darkBlueBlack
+                            : AppColors.coolGrey,
+                      ),
+                    ),
+                    if (hasSelectedCar) ...[
+                      SizedBox(height: 2.h),
+                      Text(
+                        'رقم اللوحة: ${selectedCar!.plateNumber}',
+                        style: TextStyles.Size10.withColor(AppColors.coolGrey),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.swap_vert_rounded,
+                color: hasSelectedCar
+                    ? AppColors.primaryBlue
+                    : AppColors.coolGrey,
+                size: 22.sp,
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  /// القائمة السفلية مع ربط حقيقي لسيارات الكاراج القادمة من الـ API
-  /// القائمة السفلية مع ربط حقيقي لسيارات الكاراج القادمة من الـ API
+  /// القائمة السفلية لاختيار السيارات
   void _showCarSelectionSheet(BuildContext parentContext) {
     showModalBottomSheet(
       context: parentContext,
-      isScrollControlled: true, // <--- 1. لإعطاء الشيت مرونة أكبر في الارتفاع
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (sheetContext) {
         return BlocProvider.value(
           value: parentContext.read<CarsCubit>(),
-          child: Padding(
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.surfaceWhite,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+            ),
             padding: EdgeInsets.only(
               left: 20.r,
               right: 20.r,
-              top: 20.r,
-              // أخذ مراعاة الكيبورد أو الحواف السفلية للأجهزة
+              top: 12.r,
               bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20.r,
             ),
             child: Column(
-              mainAxisSize: MainAxisSize.min, // محاولة ضغط المحتوى
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Center(
+                  child: Container(
+                    width: 44.w,
+                    height: 5.h,
+                    decoration: BoxDecoration(
+                      color: AppColors.borderGrey,
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 18.h),
                 Text(
                   'اختر السيارة المحددة للحجز',
-                  style: TextStyles.Size18.withWeight(
-                    FontWeight.bold,
-                  ).withColor(AppColors.darkBlueBlack),
+                  style: TextStyles.Size18.withWeight(FontWeight.bold)
+                      .withColor(AppColors.darkBlueBlack),
                 ),
                 SizedBox(height: 16.h),
-
-                // 2. استخدام Flexible يمنع الـ RenderFlex Overflow نهائياً
                 Flexible(
                   child: BlocBuilder<CarsCubit, CarsState>(
                     builder: (context, state) {
                       if (state is CarsLoadingState) {
-                        return const Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.primaryBlue,
+                        return Padding(
+                          padding: EdgeInsets.symmetric(vertical: 30.h),
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.primaryBlue,
+                            ),
                           ),
                         );
                       }
@@ -421,62 +639,94 @@ class _ServiceDetailsViewState extends State<ServiceDetailsView> {
 
                       if (carsList.isEmpty) {
                         return Padding(
-                          padding: EdgeInsets.all(16.r),
-                          child: const Text(
-                            'لا توجد سيارات مضافة بالكاراج الخاص بك.',
+                          padding: EdgeInsets.symmetric(vertical: 24.h),
+                          child: Center(
+                            child: Text(
+                              'لا توجد سيارات مضافة بالكاراج الخاص بك.',
+                              style: TextStyles.Size15.withColor(
+                                AppColors.coolGrey,
+                              ),
+                            ),
                           ),
                         );
                       }
 
                       return ListView.separated(
-                        shrinkWrap:
-                            true, // تجعل القائمة تأخذ حجم عناصرها فقط إذا كانت قليلة
+                        shrinkWrap: true,
                         physics: const BouncingScrollPhysics(),
                         itemCount: carsList.length,
                         separatorBuilder: (context, index) =>
-                            SizedBox(height: 8.h),
+                            SizedBox(height: 10.h),
                         itemBuilder: (context, index) {
                           final car = carsList[index];
                           final isSelected = selectedCar?.id == car.id;
 
                           return Material(
-                            color: isSelected
-                                ? AppColors.primaryBlue.withOpacity(0.05)
-                                : Colors.white,
-                            borderRadius: BorderRadius.circular(10.r),
-                            clipBehavior: Clip.antiAlias,
-                            child: ListTile(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10.r),
-                                side: BorderSide(
-                                  color: isSelected
-                                      ? AppColors.primaryBlue
-                                      : Colors.grey.shade300,
-                                ),
-                              ),
-                              leading: const Icon(
-                                Icons.directions_car,
-                                color: AppColors.primaryBlue,
-                              ),
-                              title: Text(
-                                '${car.model} (${car.year})',
-                                style: TextStyles.Size15.withWeight(
-                                  FontWeight.bold,
-                                ),
-                              ),
-                              subtitle: Text('اللوحة: ${car.plateNumber}'),
-                              trailing: isSelected
-                                  ? const Icon(
-                                      Icons.check_circle,
-                                      color: AppColors.primaryBlue,
-                                    )
-                                  : null,
+                            color: Colors.transparent,
+                            child: InkWell(
                               onTap: () {
                                 setState(() {
                                   selectedCar = car;
                                 });
                                 Navigator.pop(sheetContext);
                               },
+                              borderRadius: BorderRadius.circular(16.r),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                padding: EdgeInsets.all(14.r),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? AppColors.primaryBlue.withOpacity(0.06)
+                                      : AppColors.surfaceWhite,
+                                  borderRadius: BorderRadius.circular(16.r),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? AppColors.primaryBlue
+                                        : AppColors.borderGrey,
+                                    width: isSelected ? 1.8 : 1.0,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.directions_car_rounded,
+                                      color: isSelected
+                                          ? AppColors.primaryBlue
+                                          : AppColors.coolGrey,
+                                      size: 26.sp,
+                                    ),
+                                    SizedBox(width: 12.w),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '${car.model} (${car.year})',
+                                            style: TextStyles.Size15.withWeight(
+                                              FontWeight.bold,
+                                            ).withColor(
+                                              AppColors.darkBlueBlack,
+                                            ),
+                                          ),
+                                          SizedBox(height: 2.h),
+                                          Text(
+                                            'اللوحة: ${car.plateNumber}',
+                                            style: TextStyles.Size10.withColor(
+                                              AppColors.coolGrey,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (isSelected)
+                                      const Icon(
+                                        Icons.check_circle_rounded,
+                                        color: AppColors.primaryBlue,
+                                      ),
+                                  ],
+                                ),
+                              ),
                             ),
                           );
                         },
@@ -499,29 +749,29 @@ class _ServiceDetailsViewState extends State<ServiceDetailsView> {
         final cubit = context.read<SubServiceCubit>();
 
         if (state is SubServiceLoadingState) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(16.0),
+          return Padding(
+            padding: EdgeInsets.symmetric(vertical: 20.h),
+            child: const Center(
               child: CircularProgressIndicator(color: AppColors.primaryBlue),
             ),
           );
         }
 
-        final subServicesList = state is SubServiceSuccessState
-            ? state.subServices
-            : [];
+        final subServicesList =
+            state is SubServiceSuccessState ? state.subServices : [];
 
         if (subServicesList.isEmpty) {
           return Container(
             width: double.infinity,
             padding: EdgeInsets.all(16.r),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12.r),
+              color: AppColors.surfaceWhite,
+              borderRadius: BorderRadius.circular(16.r),
+              border: Border.all(color: AppColors.borderGrey),
             ),
             child: Text(
               'لا توجد خدمات فرعية متاحة حالياً.',
-              style: TextStyles.Size15.withColor(Colors.grey),
+              style: TextStyles.Size15.withColor(AppColors.coolGrey),
             ),
           );
         }
@@ -536,23 +786,35 @@ class _ServiceDetailsViewState extends State<ServiceDetailsView> {
             final isSelected = cubit.selectedSubServices.contains(subService);
 
             return Material(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12.r),
-              clipBehavior: Clip.antiAlias,
-              child: Container(
+              color: Colors.transparent,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12.r),
+                  color: AppColors.surfaceWhite,
+                  borderRadius: BorderRadius.circular(18.r),
                   border: Border.all(
                     color: isSelected
                         ? AppColors.primaryBlue
-                        : Colors.transparent,
-                    width: 1.5,
+                        : AppColors.borderGrey,
+                    width: isSelected ? 1.8 : 1.0,
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isSelected
+                          ? AppColors.primaryBlue.withOpacity(0.08)
+                          : AppColors.cardShadowColor,
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
                 child: CheckboxListTile(
                   activeColor: AppColors.primaryBlue,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18.r),
+                  ),
                   contentPadding: EdgeInsets.symmetric(
-                    horizontal: 12.w,
+                    horizontal: 14.w,
                     vertical: 4.h,
                   ),
                   title: Text(
@@ -565,13 +827,21 @@ class _ServiceDetailsViewState extends State<ServiceDetailsView> {
                   ),
                   subtitle: Text(
                     subService.description,
-                    style: TextStyles.Size10.withColor(Colors.grey),
+                    style: TextStyles.Size10.withColor(AppColors.coolGrey),
                   ),
-                  secondary: Text(
-                    '+${subService.price} د.أ',
-                    style: TextStyles.Size15.withWeight(
-                      FontWeight.bold,
-                    ).withColor(AppColors.primaryBlue),
+                  secondary: Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryBlue.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: Text(
+                      '+${subService.price} ل.س',
+                      style: TextStyles.Size15.withWeight(
+                        FontWeight.bold,
+                      ).withColor(AppColors.primaryBlue),
+                    ),
                   ),
                   value: isSelected,
                   onChanged: (bool? value) {
@@ -588,14 +858,16 @@ class _ServiceDetailsViewState extends State<ServiceDetailsView> {
     );
   }
 
-  /// قسم المواد المضافة بربط الـ API من DB
-  /// قسم المواد المضافة بربط الـ API من DB
+  /// قسم المواد والقطع المضافة
   Widget _buildMaterialsSection() {
     return BlocBuilder<MaterialsCubit, MaterialsState>(
       builder: (context, state) {
         if (state is MaterialsLoadingState) {
-          return const Center(
-            child: CircularProgressIndicator(color: AppColors.primaryBlue),
+          return Padding(
+            padding: EdgeInsets.symmetric(vertical: 20.h),
+            child: const Center(
+              child: CircularProgressIndicator(color: AppColors.primaryBlue),
+            ),
           );
         }
 
@@ -604,8 +876,9 @@ class _ServiceDetailsViewState extends State<ServiceDetailsView> {
             width: double.infinity,
             padding: EdgeInsets.all(16.r),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12.r),
+              color: AppColors.surfaceWhite,
+              borderRadius: BorderRadius.circular(16.r),
+              border: Border.all(color: AppColors.errorColor.withOpacity(0.4)),
             ),
             child: Text(
               'حدث خطأ أثناء جلب المواد: ${state.message}',
@@ -614,22 +887,23 @@ class _ServiceDetailsViewState extends State<ServiceDetailsView> {
           );
         }
 
-        // ⚠️ الاستفادة مباشرة من حالة النجاح SuccessState
-        final List<MaterialModel> materialsList = state is MaterialsSuccessState
-            ? state.materials
-            : context.read<MaterialsCubit>().materials;
+        final List<MaterialModel> materialsList =
+            state is MaterialsSuccessState
+                ? state.materials
+                : context.read<MaterialsCubit>().materials;
 
         if (materialsList.isEmpty) {
           return Container(
             width: double.infinity,
             padding: EdgeInsets.all(16.r),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12.r),
+              color: AppColors.surfaceWhite,
+              borderRadius: BorderRadius.circular(16.r),
+              border: Border.all(color: AppColors.borderGrey),
             ),
             child: Text(
               'لا توجد مواد مضافة مسجلة.',
-              style: TextStyles.Size15.withColor(Colors.grey),
+              style: TextStyles.Size15.withColor(AppColors.coolGrey),
             ),
           );
         }
@@ -644,23 +918,35 @@ class _ServiceDetailsViewState extends State<ServiceDetailsView> {
             final isSelected = selectedMaterialIds.contains(material.id);
 
             return Material(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12.r),
-              clipBehavior: Clip.antiAlias,
-              child: Container(
+              color: Colors.transparent,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12.r),
+                  color: AppColors.surfaceWhite,
+                  borderRadius: BorderRadius.circular(18.r),
                   border: Border.all(
                     color: isSelected
                         ? AppColors.primaryBlue
-                        : Colors.transparent,
-                    width: 1.5,
+                        : AppColors.borderGrey,
+                    width: isSelected ? 1.8 : 1.0,
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isSelected
+                          ? AppColors.primaryBlue.withOpacity(0.08)
+                          : AppColors.cardShadowColor,
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
                 child: CheckboxListTile(
                   activeColor: AppColors.primaryBlue,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18.r),
+                  ),
                   contentPadding: EdgeInsets.symmetric(
-                    horizontal: 12.w,
+                    horizontal: 14.w,
                     vertical: 4.h,
                   ),
                   title: Text(
@@ -674,14 +960,22 @@ class _ServiceDetailsViewState extends State<ServiceDetailsView> {
                   subtitle: material.description != null
                       ? Text(
                           material.description!,
-                          style: TextStyles.Size10.withColor(Colors.grey),
+                          style: TextStyles.Size10.withColor(AppColors.coolGrey),
                         )
                       : null,
-                  secondary: Text(
-                    '+${material.price} د.أ',
-                    style: TextStyles.Size15.withWeight(
-                      FontWeight.bold,
-                    ).withColor(AppColors.primaryBlue),
+                  secondary: Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryBlue.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: Text(
+                      '+${material.price} ل.س',
+                      style: TextStyles.Size15.withWeight(
+                        FontWeight.bold,
+                      ).withColor(AppColors.primaryBlue),
+                    ),
                   ),
                   value: isSelected,
                   onChanged: (bool? value) {

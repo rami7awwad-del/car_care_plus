@@ -185,43 +185,47 @@ class MyCarsView extends StatelessWidget {
             },
           ),
         ),
-        floatingActionButton: Container(
-          decoration: BoxDecoration(
-            gradient: AppColors.buttonGradient,
-            borderRadius: BorderRadius.circular(30.r),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primaryBlue.withOpacity(0.35),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: FloatingActionButton.extended(
-            onPressed: () {
-              final carsCubit = context.read<CarsCubit>();
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (ctx) => BlocProvider.value(
-                    value: carsCubit,
-                    child: const AddCarView(),
-                  ),
+        // رفع الزر قليلاً عن الحافة السفلية
+        floatingActionButton: Padding(
+          padding: EdgeInsets.only(bottom: 100.h),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: AppColors.buttonGradient,
+              borderRadius: BorderRadius.circular(30.r),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryBlue.withOpacity(0.35),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
                 ),
-              );
-            },
-            elevation: 0,
-            backgroundColor: Colors.transparent,
-            icon: Icon(
-              Icons.add_rounded,
-              color: AppColors.surfaceWhite,
-              size: 22.sp,
+              ],
             ),
-            label: Text(
-              'إضافة سيارة',
-              style: TextStyles.Size15.withWeight(
-                FontWeight.bold,
-              ).withColor(AppColors.surfaceWhite),
+            child: FloatingActionButton.extended(
+              onPressed: () {
+                final carsCubit = context.read<CarsCubit>();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (ctx) => BlocProvider.value(
+                      value: carsCubit,
+                      child: const AddCarView(),
+                    ),
+                  ),
+                );
+              },
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+              icon: Icon(
+                Icons.add_rounded,
+                color: AppColors.surfaceWhite,
+                size: 22.sp,
+              ),
+              label: Text(
+                'إضافة سيارة',
+                style: TextStyles.Size15.withWeight(
+                  FontWeight.bold,
+                ).withColor(AppColors.surfaceWhite),
+              ),
             ),
           ),
         ),

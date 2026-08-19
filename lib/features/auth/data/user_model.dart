@@ -20,11 +20,14 @@ class UserModel {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
-    final userData = json['data'] ?? json;
+    final root = json['data'] ?? json;
+    // بعض الاستجابات تغلّف بيانات المستخدم داخل مفتاح user بجانب التوكن
+    final userData = (root is Map && root['user'] is Map) ? root['user'] : root;
 
     bool parseIsActive(dynamic value) {
       if (value is bool) return value;
       if (value is int) return value == 1;
+      if (value is String) return value == '1' || value.toLowerCase() == 'true';
       return false;
     }
 
@@ -36,8 +39,26 @@ class UserModel {
       imageUrl: userData['image_url'],
       isActive: parseIsActive(userData['is_active']),
       role: userData['role'] ?? '',
-      token: userData['token'],
+      // التوكن قد يصل بجانب بيانات المستخدم أو في جذر الاستجابة وبأسماء مختلفة،
+      // لذلك نبحث عنه في كل المستويات بدل الاعتماد على مفتاح واحد
+      token: _extractToken(userData) ?? _extractToken(root) ?? _extractToken(json),
     );
+  }
+
+  static const List<String> _tokenKeys = [
+    'token',
+    'access_token',
+    'api_token',
+    'plainTextToken',
+  ];
+
+  static String? _extractToken(dynamic source) {
+    if (source is! Map) return null;
+    for (final key in _tokenKeys) {
+      final value = source[key];
+      if (value is String && value.isNotEmpty) return value;
+    }
+    return null;
   }
 
   Map<String, dynamic> toJson() {

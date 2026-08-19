@@ -1,4 +1,5 @@
 import 'package:car_care_plus/core/resources/app_color.dart';
+import 'package:car_care_plus/core/widgets/app_drawer.dart';
 import 'package:car_care_plus/core/resources/text_style.dart';
 import 'package:car_care_plus/features/auth/presentation/companyProfilePage.dart';
 import 'package:car_care_plus/features/cars/ui/views/my_cars_view.dart';
@@ -16,6 +17,9 @@ class CompanyMainLayout extends StatefulWidget {
 class _CompanyMainLayoutState extends State<CompanyMainLayout> {
   int _currentIndex = 2;
 
+  // القائمة الجانبية مركّبة على هذا الـ Scaffold لتغطي الشاشة كاملة
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   // القائمة الخاصة بالشركة (تشترك في الهوم والطلبات وتختلف في البروفايل)
   late final List<Widget> _pages;
 
@@ -25,7 +29,8 @@ class _CompanyMainLayoutState extends State<CompanyMainLayout> {
     _pages = [
       const CompanyProfilePage(), // 👈 شاشة البروفايل الخاصة بالشركة
       const MyCarsView(),
-      const HomeView(), // 👈 نفس الهوم المشترك
+      // 👈 نفس الهوم المشترك، والصورة الرمزية فيه تفتح القائمة الجانبية
+      HomeView(onMenuPressed: () => _scaffoldKey.currentState?.openDrawer()),
       const PackagesCatalogView(),
     ];
   }
@@ -33,6 +38,8 @@ class _CompanyMainLayoutState extends State<CompanyMainLayout> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: const AppDrawer(),
       backgroundColor: AppColors.lightBlueSurface,
       body: IndexedStack(
         index: _currentIndex,

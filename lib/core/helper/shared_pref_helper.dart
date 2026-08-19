@@ -4,6 +4,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SharedPrefKeys {
   static const String userToken = 'user_token';
+
+  /// رمز لغة الواجهة المختارة ('ar' أو 'en')
+  static const String appLocale = 'app_locale';
 }
 
 class SharedPrefHelper {
