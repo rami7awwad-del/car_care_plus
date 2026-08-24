@@ -36,31 +36,35 @@ class CarCardWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. الجزء العلوي: لوحة السيارة ونوع الموديل ومحوّر التحكم
+          // 1. الجزء العلوي: موديل السيارة ولوحة التحكم
           Padding(
             padding: EdgeInsets.all(16.r),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      car.model,
-                      style: TextStyles.Size18
-                          .withWeight(FontWeight.bold)
-                          .withColor(AppColors.darkBlueBlack),
-                    ),
-                    SizedBox(height: 2.h),
-                    Text(
-                      'موديل ${car.year}',
-                      style: TextStyles.Size10.withColor(AppColors.coolGrey),
-                    ),
-                  ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        car.model,
+                        style: TextStyles.Size18
+                            .withWeight(FontWeight.bold)
+                            .withColor(AppColors.darkBlueBlack),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        'موديل ${car.year}',
+                        style: TextStyles.Size10.withColor(AppColors.coolGrey),
+                      ),
+                    ],
+                  ),
                 ),
-
-                // تصميم لوحة السيارة الاحترافية
+                SizedBox(width: 8.w),
+                // تصميم لوحة السيارة
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                   decoration: BoxDecoration(
@@ -87,7 +91,7 @@ class CarCardWidget extends StatelessWidget {
             ),
           ),
 
-          // 2. صورة المركبة بلمسة التدرج
+          // 2. صورة المركبة
           if (formattedImageUrl != null && formattedImageUrl.isNotEmpty)
             Stack(
               children: [
@@ -99,7 +103,6 @@ class CarCardWidget extends StatelessWidget {
                     width: double.infinity,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
-                      debugPrint("CarCardWidget Image Error: $error | URL: $formattedImageUrl");
                       return _buildDefaultCarImage();
                     },
                   ),
@@ -127,8 +130,7 @@ class CarCardWidget extends StatelessWidget {
                     bottom: 10.h,
                     right: 12.w,
                     child: Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                       decoration: BoxDecoration(
                         gradient: AppColors.primaryGradient,
                         borderRadius: BorderRadius.circular(12.r),
@@ -150,7 +152,7 @@ class CarCardWidget extends StatelessWidget {
 
           SizedBox(height: 12.h),
 
-          // 3. المواصفات الفنية المباشرة (المسافة، السلندرات، نوع الوقود)
+          // 3. المواصفات الفنية
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.w),
             child: Container(
@@ -186,7 +188,7 @@ class CarCardWidget extends StatelessWidget {
 
           SizedBox(height: 12.h),
 
-          // 4. الفرع والأزرار الإجرائية
+          // 4. أزرار التعديل والحذف
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
             child: Row(
@@ -262,10 +264,7 @@ class CarCardWidget extends StatelessWidget {
       children: [
         Icon(icon, size: 18.sp, color: AppColors.primaryBlue),
         SizedBox(height: 4.h),
-        Text(
-          title,
-          style: TextStyles.Size10.withColor(AppColors.coolGrey),
-        ),
+        Text(title, style: TextStyles.Size10.withColor(AppColors.coolGrey)),
         SizedBox(height: 2.h),
         Text(
           value,
@@ -319,8 +318,7 @@ class CarCardWidget extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('إلغاء',
-                style: TextStyles.Size15.withColor(AppColors.coolGrey)),
+            child: Text('إلغاء', style: TextStyles.Size15.withColor(AppColors.coolGrey)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -329,11 +327,9 @@ class CarCardWidget extends StatelessWidget {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.errorColor,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
             ),
-            child: Text('حذف',
-                style: TextStyles.Size15.withColor(AppColors.surfaceWhite)),
+            child: Text('حذف', style: TextStyles.Size15.withColor(AppColors.surfaceWhite)),
           ),
         ],
       ),

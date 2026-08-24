@@ -1,5 +1,5 @@
-import 'package:car_care_plus/core/routing/app_routes.dart';
 import 'package:car_care_plus/features/cars/ui/views/add_car_view.dart';
+import 'package:car_care_plus/features/cars/ui/views/edit_car_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -34,9 +34,7 @@ class MyCarsView extends StatelessWidget {
           centerTitle: true,
           actions: [
             IconButton(
-              onPressed: () {
-                // فتح شاشة البحث أو الفلترة إن وجدت
-              },
+              onPressed: () {},
               icon: Icon(
                 Icons.tune_rounded,
                 color: AppColors.darkBlueBlack,
@@ -164,12 +162,15 @@ class MyCarsView extends StatelessWidget {
                                 context.read<CarsCubit>().deleteCar(car.id);
                               },
                               onEdit: () {
-                                // الانتقال لشاشة تعديل البيانات وتمرير كائن السيارة الحالية
-                                Navigator.pushNamed(
+                                final carsCubit = context.read<CarsCubit>();
+                                Navigator.push(
                                   context,
-                                  Routes
-                                      .editCar, // أصلح اسم الـ Route حسب ملف الإشارات لديك
-                                  arguments: car,
+                                  MaterialPageRoute(
+                                    builder: (ctx) => BlocProvider.value(
+                                      value: carsCubit,
+                                      child: EditCarPage(car: car),
+                                    ),
+                                  ),
                                 );
                               },
                             ),
@@ -184,43 +185,47 @@ class MyCarsView extends StatelessWidget {
             },
           ),
         ),
-        floatingActionButton: Container(
-          decoration: BoxDecoration(
-            gradient: AppColors.buttonGradient,
-            borderRadius: BorderRadius.circular(30.r),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primaryBlue.withOpacity(0.35),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: FloatingActionButton.extended(
-            onPressed: () {
-              final carsCubit = context.read<CarsCubit>();
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (ctx) => BlocProvider.value(
-                    value: carsCubit,
-                    child: const AddCarView(),
-                  ),
+        // رفع الزر قليلاً عن الحافة السفلية
+        floatingActionButton: Padding(
+          padding: EdgeInsets.only(bottom: 100.h),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: AppColors.buttonGradient,
+              borderRadius: BorderRadius.circular(30.r),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryBlue.withOpacity(0.35),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
                 ),
-              );
-            },
-            elevation: 0,
-            backgroundColor: Colors.transparent,
-            icon: Icon(
-              Icons.add_rounded,
-              color: AppColors.surfaceWhite,
-              size: 22.sp,
+              ],
             ),
-            label: Text(
-              'إضافة سيارة',
-              style: TextStyles.Size15.withWeight(
-                FontWeight.bold,
-              ).withColor(AppColors.surfaceWhite),
+            child: FloatingActionButton.extended(
+              onPressed: () {
+                final carsCubit = context.read<CarsCubit>();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (ctx) => BlocProvider.value(
+                      value: carsCubit,
+                      child: const AddCarView(),
+                    ),
+                  ),
+                );
+              },
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+              icon: Icon(
+                Icons.add_rounded,
+                color: AppColors.surfaceWhite,
+                size: 22.sp,
+              ),
+              label: Text(
+                'إضافة سيارة',
+                style: TextStyles.Size15.withWeight(
+                  FontWeight.bold,
+                ).withColor(AppColors.surfaceWhite),
+              ),
             ),
           ),
         ),

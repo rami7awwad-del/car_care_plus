@@ -1,6 +1,4 @@
 import 'dart:io';
-import 'package:car_care_plus/features/cars/logic/cars_cubit.dart';
-import 'package:car_care_plus/features/cars/logic/cars_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -8,6 +6,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:car_care_plus/core/resources/app_color.dart';
 import 'package:car_care_plus/core/resources/text_style.dart';
 import '../../data/models/car_model.dart';
+import '../../logic/cars_cubit.dart';
+import '../../logic/cars_state.dart';
 
 class EditCarPage extends StatefulWidget {
   final CarModel car;
@@ -28,7 +28,9 @@ class _EditCarPageState extends State<EditCarPage> {
   late TextEditingController _cylindersController;
   late TextEditingController _colorController;
 
-  String? _selectedFuelType;
+  int? _selectedBrandId;
+  int? _selectedCarTypeId;
+  String _selectedFuelType = 'petrol';
   File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
 
@@ -44,9 +46,16 @@ class _EditCarPageState extends State<EditCarPage> {
     _mileageController = TextEditingController(text: widget.car.mileage.toString());
     _cylindersController = TextEditingController(text: widget.car.cylinders.toString());
     _colorController = TextEditingController(text: widget.car.color);
-    _selectedFuelType = _fuelTypes.contains(widget.car.fuelType.toLowerCase())
-        ? widget.car.fuelType.toLowerCase()
-        : _fuelTypes.first;
+
+    if (_fuelTypes.contains(widget.car.fuelType.toLowerCase())) {
+      _selectedFuelType = widget.car.fuelType.toLowerCase();
+    }
+
+    _selectedBrandId = widget.car.brandId;
+    _selectedCarTypeId = widget.car.carTypeId;
+
+    // جلب قائمة الماركات والأنواع فور فتح شاشة التعديل
+    context.read<CarsCubit>().fetchBrandsAndTypes();
   }
 
   @override
@@ -61,7 +70,7 @@ class _EditCarPageState extends State<EditCarPage> {
   }
 
   Future<void> _pickImage() async {
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
     if (pickedFile != null) {
       setState(() {
         _selectedImage = File(pickedFile.path);
@@ -80,17 +89,18 @@ class _EditCarPageState extends State<EditCarPage> {
               backgroundColor: Colors.green,
             ),
           );
-          Navigator.pop(context); // العودة للشاشة السابقة بعد التحديث
+          Navigator.pop(context);
         } else if (state is CarsErrorState) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.errorColor,
             ),
           );
         }
       },
       builder: (context, state) {
+        final cubit = context.read<CarsCubit>();
         final isLoading = state is UpdateCarLoadingState;
 
         return Scaffold(
@@ -115,7 +125,7 @@ class _EditCarPageState extends State<EditCarPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 1. اختيار صورة السيارة
+                  // 1. صورة السيارة
                   Center(
                     child: GestureDetector(
                       onTap: _pickImage,
@@ -133,14 +143,14 @@ class _EditCarPageState extends State<EditCarPage> {
                                       image: FileImage(_selectedImage!),
                                       fit: BoxFit.cover,
                                     )
-                                  : (widget.car.cleanImageUrl != null
+                                  : (widget.car.cleanImageUrl != null && widget.car.cleanImageUrl!.isNotEmpty
                                       ? DecorationImage(
                                           image: NetworkImage(widget.car.cleanImageUrl!),
                                           fit: BoxFit.cover,
                                         )
                                       : null),
                             ),
-                            child: (_selectedImage == null && widget.car.cleanImageUrl == null)
+                            child: (_selectedImage == null && (widget.car.cleanImageUrl == null || widget.car.cleanImageUrl!.isEmpty))
                                 ? Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
@@ -152,7 +162,7 @@ class _EditCarPageState extends State<EditCarPage> {
                                 : null,
                           ),
                           Positioned(
-                            bottom: 8.h,
+                            bottom: 30.h,
                             right: 8.w,
                             child: Container(
                               padding: EdgeInsets.all(8.r),
@@ -170,7 +180,57 @@ class _EditCarPageState extends State<EditCarPage> {
 
                   SizedBox(height: 24.h),
 
-                  // 2. حقول إدخال البيانات
+                  // 2. اختيار ماركة السيارة (Brand)
+                  Text(
+                    'ماركة السيارة (Brand)',
+                    style: TextStyles.Size15.withWeight(FontWeight.bold).withColor(AppColors.darkBlueBlack),
+                  ),
+                  SizedBox(height: 8.h),
+                  DropdownButtonFormField<int>(
+                    value: cubit.carBrands.any((b) => b['id'] == _selectedBrandId) ? _selectedBrandId : null,
+                    hint: Text('اختر ماركة السيارة', style: TextStyles.Size15.withColor(AppColors.coolGrey)),
+                    decoration: _buildInputDecoration('', Icons.branding_watermark_outlined),
+                    items: cubit.carBrands.map((brand) {
+                      return DropdownMenuItem<int>(
+                        value: brand['id'] as int,
+                        child: Text(
+                          brand['name']?.toString() ?? '',
+                          style: TextStyles.Size15.withColor(AppColors.darkBlueBlack),
+                        ),
+                      );
+                    }).toList(),
+                    validator: (v) => v == null ? 'يرجى اختيار ماركة السيارة' : null,
+                    onChanged: (val) => setState(() => _selectedBrandId = val),
+                  ),
+
+                  SizedBox(height: 16.h),
+
+                  // 3. اختيار نوع السيارة (Car Type)
+                  Text(
+                    'نوع السيارة (Car Type)',
+                    style: TextStyles.Size15.withWeight(FontWeight.bold).withColor(AppColors.darkBlueBlack),
+                  ),
+                  SizedBox(height: 8.h),
+                  DropdownButtonFormField<int>(
+                    value: cubit.carTypes.any((t) => t.id == _selectedCarTypeId) ? _selectedCarTypeId : null,
+                    hint: Text('اختر نوع السيارة', style: TextStyles.Size15.withColor(AppColors.coolGrey)),
+                    decoration: _buildInputDecoration('', Icons.category_outlined),
+                    items: cubit.carTypes.map((type) {
+                      return DropdownMenuItem<int>(
+                        value: type.id,
+                        child: Text(
+                          type.nameAr.isNotEmpty ? type.nameAr : type.name,
+                          style: TextStyles.Size15.withColor(AppColors.darkBlueBlack),
+                        ),
+                      );
+                    }).toList(),
+                    validator: (v) => v == null ? 'يرجى اختيار نوع السيارة' : null,
+                    onChanged: (val) => setState(() => _selectedCarTypeId = val),
+                  ),
+
+                  SizedBox(height: 16.h),
+
+                  // 4. الموديل ورقم اللوحة
                   _buildTextField(
                     controller: _modelController,
                     label: 'الموديل / اسم السيارة',
@@ -229,7 +289,6 @@ class _EditCarPageState extends State<EditCarPage> {
 
                   SizedBox(height: 16.h),
 
-                  // حقل اللون
                   _buildTextField(
                     controller: _colorController,
                     label: 'لون السيارة',
@@ -238,7 +297,6 @@ class _EditCarPageState extends State<EditCarPage> {
 
                   SizedBox(height: 16.h),
 
-                  // قائمة اختيار نوع الوقود
                   DropdownButtonFormField<String>(
                     value: _selectedFuelType,
                     decoration: _buildInputDecoration('نوع الوقود', Icons.local_gas_station),
@@ -248,12 +306,16 @@ class _EditCarPageState extends State<EditCarPage> {
                         child: Text(_translateFuelType(type), style: TextStyles.Size15),
                       );
                     }).toList(),
-                    onChanged: (val) => setState(() => _selectedFuelType = val),
+                    onChanged: (val) {
+                      if (val != null) {
+                        setState(() => _selectedFuelType = val);
+                      }
+                    },
                   ),
 
                   SizedBox(height: 32.h),
 
-                  // 3. زر حفظ التعديلات
+                  // زر الحفظ
                   SizedBox(
                     width: double.infinity,
                     height: 50.h,
@@ -283,26 +345,29 @@ class _EditCarPageState extends State<EditCarPage> {
       },
     );
   }
-void _saveChanges() {
-  if (_formKey.currentState!.validate()) {
-    // تجهيز البيانات وتحويل الأرقام إلى أنواعها الرقمية الصحيحة
-    final Map<String, dynamic> carData = {
-      'model': _modelController.text.trim(),
-      'plate_number': _plateNumberController.text.trim(),
-      'year': int.tryParse(_yearController.text.trim()) ?? widget.car.year,
-      'mileage': int.tryParse(_mileageController.text.trim()) ?? widget.car.mileage,
-      'cylinders': int.tryParse(_cylindersController.text.trim()) ?? widget.car.cylinders,
-      'color': _colorController.text.trim(),
-      'fuel_type': _selectedFuelType ?? widget.car.fuelType,
-    };
 
-    context.read<CarsCubit>().updateCar(
-          carId: widget.car.id,
-          carData: carData,
-          imageFile: _selectedImage,
-        );
+  void _saveChanges() {
+    if (_formKey.currentState!.validate()) {
+      final Map<String, dynamic> carData = {
+        'brand_id': _selectedBrandId,
+        'car_type_id': _selectedCarTypeId,
+        'model': _modelController.text.trim(),
+        'plate_number': _plateNumberController.text.trim(),
+        'year': _yearController.text.trim(),
+        'mileage': _mileageController.text.trim(),
+        'cylinders': _cylindersController.text.trim(),
+        'color': _colorController.text.trim(),
+        'fuel_type': _selectedFuelType,
+      };
+
+      context.read<CarsCubit>().updateCar(
+            carId: widget.car.id,
+            carData: carData,
+            imageFile: _selectedImage,
+          );
+    }
   }
-}
+
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -321,7 +386,7 @@ void _saveChanges() {
 
   InputDecoration _buildInputDecoration(String label, IconData icon) {
     return InputDecoration(
-      labelText: label,
+      labelText: label.isNotEmpty ? label : null,
       prefixIcon: Icon(icon, color: AppColors.primaryBlue, size: 20.sp),
       filled: true,
       fillColor: AppColors.surfaceWhite,

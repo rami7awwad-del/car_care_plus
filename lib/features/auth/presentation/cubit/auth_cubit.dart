@@ -1,5 +1,6 @@
 // lib/features/auth/presentation/cubit/auth_cubit.dart
 
+import 'package:car_care_plus/core/helper/shared_pref_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:car_care_plus/features/auth/domain/repositories/auth_repository.dart';
 import 'package:car_care_plus/features/auth/presentation/cubit/auth_state.dart';
@@ -128,6 +129,20 @@ Future<void> updateProfile({
     (failureMessage) => emit(AuthFailure(failureMessage)),
     (userModel) => emit(AuthSuccess(userModel)),
   );
+}
+
+
+Future<void> logout() async {
+  emit(AuthLoading());
+  try {
+    // مسح التوكن من التخزين الآمن
+    await SharedPrefHelper.deleteSecuredString(SharedPrefKeys.userToken);
+    
+    // إعادة الحالة للبداية
+    emit(AuthInitial());
+  } catch (e) {
+    emit(AuthFailure(e.toString()));
+  }
 }
 
 }

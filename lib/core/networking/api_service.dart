@@ -26,16 +26,22 @@ class ApiService {
   }
 
   /// طلبات POST (إنشاء بيانات)
+  ///
+  /// [options] لتجاوز إعدادات الطلب الافتراضية عند الحاجة، مثل رفع المهلة
+  /// الزمنية لنقاط النهاية البطيئة
   Future<Response> post({
     required String endpoint,
     dynamic data,
     Map<String, dynamic>? queryParameters,
+    Options? options,
   }) async {
     try {
+      print('🚀 REQUEST URL: ${_dio.options.baseUrl}$endpoint');
       final response = await _dio.post(
         endpoint,
         data: data,
         queryParameters: queryParameters,
+        options: options,
       );
       return response;
     } catch (e) {

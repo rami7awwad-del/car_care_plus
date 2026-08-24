@@ -15,23 +15,23 @@ class CarsCubit extends Cubit<CarsState> {
 
   /// جلب قائمة جميع سيارات المستخدم
   Future<void> getUserCars() async {
-    emit(CarsLoadingState());
+    _safeEmit(CarsLoadingState());
     try {
       cars = await _carsRepo.getUserCars();
-      emit(CarsSuccessState(cars));
+      _safeEmit(CarsSuccessState(cars));
     } catch (error) {
-      emit(CarsErrorState(error.toString()));
+      _safeEmit(CarsErrorState(error.toString()));
     }
   }
 
   /// جلب تفاصيل سيارة محددة
   Future<void> getCarDetails(int carId) async {
-    emit(CarDetailsLoadingState());
+    _safeEmit(CarDetailsLoadingState());
     try {
       selectedCar = await _carsRepo.getCarDetails(carId);
-      emit(CarDetailsSuccessState(selectedCar!));
+      _safeEmit(CarDetailsSuccessState(selectedCar!));
     } catch (error) {
-      emit(CarsErrorState(error.toString()));
+      _safeEmit(CarsErrorState(error.toString()));
     }
   }
 
@@ -40,19 +40,20 @@ class CarsCubit extends Cubit<CarsState> {
   required Map<String, dynamic> carData,
   String? imagePath,
 }) async {
-  emit(AddCarLoadingState());
+  _safeEmit(AddCarLoadingState());
   try {
     final newCar = await _carsRepo.addCar(
       carData: carData,
-      imagePath: imagePath,
+      imageFile: imagePath != null ? File(imagePath) : null,
     );
     
     // إعادة جلب السيارات الحديثة فوراً لتحديث القائمة بنفس كائنات البيانات القادمة من الباك إند
     await getUserCars();
     
-    emit(AddCarSuccessState(newCar));
+    _safeEmit(AddCarSuccessState(newCar));
   } catch (error) {
-    emit(CarsErrorState(error.toString()));
+    
+    _safeEmit(CarsErrorState(error.toString()));
   }
 }
 
@@ -62,7 +63,7 @@ class CarsCubit extends Cubit<CarsState> {
   required Map<String, dynamic> carData,
   File? imageFile,
 }) async {
-  emit(UpdateCarLoadingState());
+  _safeEmit(UpdateCarLoadingState());
   try {
     // 1. استقبال كائن السيارة المحدث القادم من السيرفر
     final updatedCar = await _carsRepo.updateCar(
@@ -81,25 +82,52 @@ class CarsCubit extends Cubit<CarsState> {
     selectedCar = updatedCar;
 
     // 4. إرسال حالة النجاح لزر الحفظ وإغلاق الشاشة
-    emit(UpdateCarSuccessState(updatedCar));
+    _safeEmit(UpdateCarSuccessState(updatedCar));
 
     // 5. إرسال قائمة السيارات المحدثة مع مصفوفة جديدة لضمان اعادة بناء الواجهة (Rebuild)
-    emit(CarsSuccessState(List.from(cars)));
-
+    _safeEmit(CarsSuccessState(List.from(cars)));
+      getUserCars();
   } catch (error) {
-    emit(CarsErrorState(error.toString()));
+    _safeEmit(CarsErrorState(error.toString()));
   }
 }
   /// حذف سيارة
   Future<void> deleteCar(int carId) async {
-    emit(DeleteCarLoadingState());
+    _safeEmit(DeleteCarLoadingState());
     try {
       await _carsRepo.deleteCar(carId);
       cars.removeWhere((c) => c.id == carId);
-      emit(DeleteCarSuccessState(carId));
-      emit(CarsSuccessState(cars));
+      _safeEmit(DeleteCarSuccessState(carId));
+      _safeEmit(CarsSuccessState(cars));
     } catch (error) {
-      emit(CarsErrorState(error.toString()));
+      _safeEmit(CarsErrorState(error.toString()));
     }
+  }
+
+List<Map<String, dynamic>> carBrands = [];
+List<CarTypeModel> carTypes = [];
+
+/// جلب الماركات والأنواع معاً
+Future<void> fetchBrandsAndTypes() async {
+  _safeEmit(CarsLoadingState());
+  try {
+    final results = await Future.wait([
+      _carsRepo.getCarBrands(),
+      _carsRepo.getCarTypes(),
+    ]);
+    carBrands = results[0] as List<Map<String, dynamic>>;
+    carTypes = results[1] as List<CarTypeModel>;
+    _safeEmit(CarsSuccessState(cars));
+  } catch (error) {
+    _safeEmit(CarsErrorState(error.toString()));
+  }
+}
+
+
+  /// يمنع إطلاق حالة بعد إغلاق الـ Cubit.
+  /// يحدث ذلك عند مغادرة الشاشة قبل انتهاء طلب الشبكة، لأن CarsCubit يُنشأ
+  /// داخل BlocProvider في my_cars_view و service_details_view فيُغلق مع الشاشة.
+  void _safeEmit(CarsState state) {
+    if (!isClosed) emit(state);
   }
 }

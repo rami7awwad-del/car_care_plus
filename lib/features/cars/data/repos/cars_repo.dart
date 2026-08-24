@@ -1,8 +1,8 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:car_care_plus/core/networking/api_constants.dart';
 import 'package:car_care_plus/core/networking/api_service.dart';
 import '../models/car_model.dart';
-import 'dart:io';
 
 class CarsRepo {
   final ApiService _apiService;
@@ -19,28 +19,43 @@ class CarsRepo {
   }
 
   /// إضافة سيارة جديدة مع صورة اختيارية
-  Future<CarModel> addCar({
-    required Map<String, dynamic> carData,
-    String? imagePath,
-  }) async {
-    final Response response;
+  /// إضافة سيارة جديدة مع صورة اختيارية
+Future<CarModel> addCar({
+  required Map<String, dynamic> carData,
+  File? imageFile,
+}) async {
+  // 1. تجهيز الخريطة ونقل الحقول لنصوص صريحة
+  final Map<String, dynamic> map = {
+    'brand_id': carData['brand_id'].toString(),
+    'car_type_id': carData['car_type_id'].toString(),
+    'plate_number': carData['plate_number'].toString(),
+    'model': carData['model'].toString(),
+    'year': carData['year'].toString(),
+    'color': carData['color'].toString(),
+    'fuel_type': carData['fuel_type'].toString(),
+    'cylinders': carData['cylinders'].toString(),
+    'mileage': carData['mileage'].toString(),
+  };
 
-    if (imagePath != null && imagePath.isNotEmpty) {
-      response = await _apiService.postWithFile(
-        endpoint: ApiConstants.createCar,
-        data: carData,
-        filePath: imagePath,
-        fileKey: 'image',
-      );
-    } else {
-      response = await _apiService.post(
-        endpoint: ApiConstants.createCar,
-        data: carData,
-      );
-    }
-
-    return CarModel.fromJson(response.data['data']);
+  // 2. إذا وُجدت صورة، أضفها كـ MultipartFile
+  if (imageFile != null) {
+    map['image'] = await MultipartFile.fromFile(
+      imageFile.path,
+      filename: imageFile.path.split('/').last,
+    );
   }
+
+  // 3. إنشاء الـ FormData
+  final formData = FormData.fromMap(map);
+
+  // 4. إرسال الطلب
+  final response = await _apiService.post(
+    endpoint: ApiConstants.createCar,
+    data: formData,
+  );
+
+  return CarModel.fromJson(response.data['data']);
+}
 
   /// جلب تفاصيل سيارة
   Future<CarModel> getCarDetails(int carId) async {
@@ -52,37 +67,51 @@ class CarsRepo {
 
   /// تعديل سيارة
   Future<CarModel> updateCar({
-  required int carId,
-  required Map<String, dynamic> carData,
-  File? imageFile,
-}) async {
-  // 1. تحويل البيانات إلى Map قابلة للتعديل
-  final formDataMap = Map<String, dynamic>.from(carData);
+    required int carId,
+    required Map<String, dynamic> carData,
+    File? imageFile,
+  }) async {
+    final formDataMap = Map<String, dynamic>.from(carData);
 
-  // 2. إضافة محاكاة الـ PUT التي يتوقعها Laravel
-  formDataMap['_method'] = 'PUT';
+    if (imageFile != null) {
+      formDataMap['image'] = await MultipartFile.fromFile(
+        imageFile.path,
+        filename: imageFile.path.split('/').last,
+      );
+    }
 
-  // 3. إرفاق الصورة إن تم تحديدها من معرض الصور
-  if (imageFile != null) {
-    formDataMap['image'] = await MultipartFile.fromFile(
-      imageFile.path,
-      filename: imageFile.path.split('/').last,
+    final response = await _apiService.post(
+      endpoint: '${ApiConstants.updateCar}$carId',
+      data: FormData.fromMap(formDataMap),
     );
+
+    return CarModel.fromJson(response.data['data']);
   }
-
-  // 4. إرسال الطلب بنوع POST حصراً ليقرأ Laravel الـ FormData بشكل صحيح
-  final response = await _apiService.post(
-    endpoint: '${ApiConstants.updateCar}$carId',
-    data: FormData.fromMap(formDataMap),
-  );
-
-  return CarModel.fromJson(response.data['data']);
-}
 
   /// حذف سيارة
-  Future<void> deleteCar(int carId) async {
-    await _apiService.delete(
-      endpoint: '${ApiConstants.deleteCar}$carId',
-    );
-  }
+  /// حذف سيارة (السيرفر يتوقع GET)
+Future<void> deleteCar(int carId) async {
+  await _apiService.get(
+    endpoint: '${ApiConstants.deleteCar}$carId',
+  );
+}
+
+/// جلب قائمة ماركات السيارات
+Future<List<Map<String, dynamic>>> getCarBrands() async {
+  final response = await _apiService.get(
+    endpoint: ApiConstants.carBrands,
+  );
+  final List data = response.data['data'] as List;
+  return List<Map<String, dynamic>>.from(data);
+}
+
+/// جلب قائمة أنواع السيارات
+Future<List<CarTypeModel>> getCarTypes() async {
+  final response = await _apiService.get(
+    endpoint: ApiConstants.carTypes,
+  );
+  final List data = response.data['data'] as List;
+  return data.map((e) => CarTypeModel.fromJson(e)).toList();
+}
+
 }
